@@ -261,7 +261,7 @@ def getUSB():
     print(points)
     previewPlot()
 
-# Get x, y of one arm for showcase purposes
+# Get x, y of one arm for showcase purpose
 def getUSBpokaz():
 
     # CHECK THIS FOR OVERHEAD
