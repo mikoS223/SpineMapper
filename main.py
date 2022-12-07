@@ -1,16 +1,34 @@
+# UI
 from tkinter import *
 from tkinter.messagebox import askyesno
 from tkinter import ttk
 from ttkthemes import ThemedTk
+
+# Arrays
 import numpy as np
+
+# Plots
 from mpl_toolkits.mplot3d import Axes3D
 from matplotlib.backends.backend_tkagg import (FigureCanvasTkAgg, NavigationToolbar2Tk)
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
+
+# Usb
 import serial
 import serial.tools.list_ports as p
+
+# Database
 import sqlite3
+
+# Time
 import datetime
+
+# Profiling
+import cProfile, pstats
+
+profiler = cProfile.Profile()
+profiler.enable()
+
 
 ser = 0
 connected = 0
@@ -34,6 +52,7 @@ root.wm_title("Spine Mapper")
 style = ttk.Style(root)
 style.theme_use("yaru")
 
+
 def deleteMeasurement(imieNazwisko, date):  # DELETES WRONG MEASUREMENT
     if askyesno(title='Potwierdzenie', message='Usunąć dane pacenta?'):
         imieNazwiskoSplit = imieNazwisko.split(" ")
@@ -47,6 +66,7 @@ def deleteMeasurement(imieNazwisko, date):  # DELETES WRONG MEASUREMENT
         print(conditions)
         c.execute("DELETE FROM patients WHERE imie = (?) AND nazwisko = (?) AND czas = (?)", conditions)
         conn.commit()
+
 
 def deleteRecord(imieNazwisko):
     if askyesno(title='Potwierdzenie', message='Usunąć wszystkie dane pacenta?'):
@@ -66,11 +86,13 @@ def euclid(currentPoints):
 
     return distances
 
+
 def concatenation():
     concat = ""
     for i in range(9):
         concat += str(points[0, i]) + "," + str(points[1, i]) + "," + str(points[2, i]) + ";"
     return concat
+
 
 def writeToDB(imie, nazwisko, concat):
     conn = sqlite3.connect('patients.db')
@@ -157,9 +179,9 @@ def readFromDB(imieNazwisko):
         prettyDate = prettyDate[:len(prettyDate) - 10]
         DateLabel = ttk.Label(branch, text=prettyDate)
 
-        DateLabel.config(background=colors[plot])  # idk how many plots this can support, my bet is 10, this is just for testing
+        DateLabel.config(
+            background=colors[plot])  # idk how many plots this can support, my bet is 10, this is just for testing
         DateLabel.grid(row=0, column=plot + 3)
-
 
         # Distances
         DistancesLabel = ttk.Label(branch, text=distances[0])
@@ -185,6 +207,7 @@ def readFromDB(imieNazwisko):
         MeasurementDelete.grid(row=9, column=plot + 3)
 
     conn.close()
+
 
 def previewPlot():
     fig = Figure(figsize=(5, 5), dpi=100)
@@ -234,6 +257,7 @@ def connect(portg):
     ser.flushInput()
     connected = 1
 
+
 # Get point positions over usb
 def getUSB():
     index = -1
@@ -261,9 +285,9 @@ def getUSB():
     print(points)
     previewPlot()
 
+
 # Get x, y of one arm for showcase purpose
 def getUSBpokaz():
-
     # CHECK THIS FOR OVERHEAD
     # this has to get more than one line, because readline stops at \n, but starts wherever, so before it was
     # getting a random amount of bytes from the back of a packet
@@ -309,11 +333,11 @@ setPort.grid(row=0, column = 7)
 """
 # LOOP
 
-if(connected == 0):
+if (connected == 0):
     portChoice = ttk.Combobox(root, width=25, value=p.comports())
-    portChoice.grid(row = 0, column = 5)
-    connectButton = ttk.Button(root, text = "connect!", command = lambda: connect(portChoice.get()))
-    connectButton.grid(row = 0, column=6)
+    portChoice.grid(row=0, column=5)
+    connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
+    connectButton.grid(row=0, column=6)
 
 testButton = ttk.Button(root, text="pobierz koordynaty", command=getUSBpokaz)
 testButton.grid(row=0, column=2)
@@ -331,7 +355,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS patients (
 conn = sqlite3.connect('patients.db')
 c = conn.cursor()
 c.execute("SELECT imie FROM patients")
-imiona = c.fetchall()  ############################################################################################
+imiona = c.fetchall()
 c.execute("SELECT nazwisko FROM patients")
 nazwiska = c.fetchall()
 imionaNazwiska = []
@@ -360,10 +384,14 @@ saveButton.grid(row=6, column=2)
 
 # Rudimentary calibration
 Calibration = ttk.Entry(root, width=40)
-Calibration.insert(0,"300")
-Calibration.grid(row = 7, column = 1)
+Calibration.insert(0, "300")
+Calibration.grid(row=7, column=1)
 CalibrationLabel = ttk.Label(root, text="<-- dzielnik do kalibracji")
 CalibrationLabel.grid(row=7, column=2, sticky=W)
 
-
 root.mainloop()
+
+profiler.disable()
+
+stats = pstats.Stats(profiler).sort_stats('cumtime')
+stats.print_stats()
