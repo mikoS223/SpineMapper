@@ -312,6 +312,15 @@ def getUSBpokaz():
 def portSelect(choice):
     port = choice
 
+def testPoints():
+    for i in range(9):
+        points[0, i] = i * 1000
+        points[1, i] = (i + 2) * 1000
+        points[2, i] = (i + 4) * 1000
+    print(points)
+    previewPlot()
+
+
 
 # toolbar attempt, didn't work
 """
@@ -334,13 +343,18 @@ setPort.grid(row=0, column = 7)
 # LOOP
 
 if (connected == 0):
+    testPoints()
     portChoice = ttk.Combobox(root, width=25, value=p.comports())
     portChoice.grid(row=0, column=5)
     connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
     connectButton.grid(row=0, column=6)
 
-testButton = ttk.Button(root, text="pobierz koordynaty", command=getUSBpokaz)
-testButton.grid(row=0, column=2)
+getPointsButton = ttk.Button(root, text="pobierz koordynaty", command=getUSBpokaz)
+getPointsButton.grid(row=0, column=2)
+
+testPointsButton = ttk.Button(root, text="test points", command=testPoints)
+testPointsButton.grid(row=0, column=3)
+
 
 # serch for patient
 conn = sqlite3.connect('patients.db')
