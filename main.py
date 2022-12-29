@@ -210,22 +210,44 @@ def readFromDB(imieNazwisko):
 
 
 def previewPlot():
-    fig = Figure(figsize=(5, 5), dpi=100)
-
-    canvas = FigureCanvasTkAgg(fig, master=root)
-    canvas.draw()
-
-    ax = fig.add_subplot(111, projection="3d")
-
-    # ax.plot(points, yline, zline, 'gray')
-    ax.plot(points[0], points[1], points[2])
-    ax.scatter(points[0], points[1], points[2])
-    canvas.get_tk_widget().grid(row=1, column=2)
 
     # calculating distances between points
     distances = euclid(points)
 
+    #i don't actually know which axis is which here, check it later
+    figxz = Figure(figsize=(5, 5), dpi=100)
+
+    canvas = FigureCanvasTkAgg(figxz, master=root)
+    canvas.draw()
+
+    xz = figxz.add_subplot(111)
+
+    # ax.plot(points, yline, zline, 'gray')
+    xz.plot(points[0], points[2], 'gray')
+    xz.scatter(points[0], points[2])
+
     # Show distances between points
+    for i in range(8):
+        xmidpoint = points[0][i] + ((points[0][i + 1] - points[0][i])/2)
+        ymidpoint = points[1][i] + ((points[1][i + 1] - points[1][i])/2)
+        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i])/2)
+        figxz.text(xmidpoint, zmidpoint, distances[i], horizontalalignment='center',verticalalignment='center', transform=xz.transData)
+
+    canvas.get_tk_widget().grid(row=1, column=2)
+
+    figxy = Figure(figsize=(5, 5), dpi=100)
+
+    canvas = FigureCanvasTkAgg(figxy, master=root)
+    canvas.draw()
+
+    xz = figxy.add_subplot(111)
+
+    # ax.plot(points, yline, zline, 'gray')
+    xz.plot(points[1], points[2], 'gray')
+    xz.scatter(points[1], points[2])
+    canvas.get_tk_widget().grid(row=1, column=3)
+
+
     DistancesLabel = ttk.Label(root, text=distances[0])
     DistancesLabel.grid(row=8, column=0)
     DistancesLabel = ttk.Label(root, text=distances[1])
