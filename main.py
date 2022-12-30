@@ -29,7 +29,6 @@ import cProfile, pstats
 profiler = cProfile.Profile()
 profiler.enable()
 
-
 ser = 0
 connected = 0
 
@@ -210,61 +209,46 @@ def readFromDB(imieNazwisko):
 
 
 def previewPlot():
-
     # calculating distances between points
     distances = euclid(points)
 
-    #i don't actually know which axis is which here, check it later
+    # i don't actually know which axis is which here, check it later
     figxz = Figure(figsize=(5, 5), dpi=100)
 
     canvas = FigureCanvasTkAgg(figxz, master=root)
     canvas.draw()
 
-    xz = figxz.add_subplot(111)
+    ax = figxz.add_subplot(111)
 
-    # ax.plot(points, yline, zline, 'gray')
-    xz.plot(points[0], points[2], 'gray')
-    xz.scatter(points[0], points[2])
+    ax.plot(points[0], points[2], 'gray')
+    ax.scatter(points[0], points[2])
 
     # Show distances between points
     for i in range(8):
-        xmidpoint = points[0][i] + ((points[0][i + 1] - points[0][i])/2)
-        ymidpoint = points[1][i] + ((points[1][i + 1] - points[1][i])/2)
-        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i])/2)
-        figxz.text(xmidpoint, zmidpoint, distances[i], horizontalalignment='center',verticalalignment='center', transform=xz.transData)
+        xmidpoint = points[0][i] + ((points[0][i + 1] - points[0][i]) / 2)
+        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
+        figxz.text(xmidpoint, zmidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
+                   transform=ax.transData)
 
     canvas.get_tk_widget().grid(row=1, column=2)
 
-    figxy = Figure(figsize=(5, 5), dpi=100)
+    figyz = Figure(figsize=(5, 5), dpi=100)
 
-    canvas = FigureCanvasTkAgg(figxy, master=root)
+    canvas = FigureCanvasTkAgg(figyz, master=root)
     canvas.draw()
 
-    xz = figxy.add_subplot(111)
+    ax = figyz.add_subplot(111)
 
-    # ax.plot(points, yline, zline, 'gray')
-    xz.plot(points[1], points[2], 'gray')
-    xz.scatter(points[1], points[2])
+    ax.plot(points[1], points[2], 'gray')
+    ax.scatter(points[1], points[2])
+
+    # Show distances between points
+    for i in range(8):
+        ymidpoint = points[1][i] + ((points[1][i + 1] - points[1][i]) / 2)
+        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
+        figyz.text(ymidpoint, zmidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
+                   transform=ax.transData)
     canvas.get_tk_widget().grid(row=1, column=3)
-
-
-    DistancesLabel = ttk.Label(root, text=distances[0])
-    DistancesLabel.grid(row=8, column=0)
-    DistancesLabel = ttk.Label(root, text=distances[1])
-    DistancesLabel.grid(row=8, column=1)
-    DistancesLabel = ttk.Label(root, text=distances[2])
-    DistancesLabel.grid(row=8, column=2)
-    DistancesLabel = ttk.Label(root, text=distances[3])
-    DistancesLabel.grid(row=8, column=3)
-    DistancesLabel = ttk.Label(root, text=distances[4])
-    DistancesLabel.grid(row=8, column=4)
-    DistancesLabel = ttk.Label(root, text=distances[5])
-    DistancesLabel.grid(row=8, column=5)
-    DistancesLabel = ttk.Label(root, text=distances[6])
-    DistancesLabel.grid(row=8, column=6)
-    DistancesLabel = ttk.Label(root, text=distances[7])
-    DistancesLabel.grid(row=8, column=7)
-
 
 # Set up usb connection
 def connect(portg):
@@ -283,15 +267,12 @@ def connect(portg):
 # Get point positions over usb
 def getUSB():
     index = -1
-    # transmition too slow to get all the points,
-    # fix: decrease delay in board firmware
 
     for i in range(18):
 
-        # recieve shit from the board over USB
+        # recieve from the board over USB
         data = ser.readline()
         decoded = data.decode('utf8')
-        # print(decoded, end = '')
 
         if "," in decoded:
             index += 1
@@ -334,14 +315,17 @@ def getUSBpokaz():
 def portSelect(choice):
     port = choice
 
+
 def testPoints():
     for i in range(9):
         points[0, i] = i * 1000
         points[1, i] = (i + 2) * 1000
         points[2, i] = (i + 4) * 1000
+    points[0, 4] = 7000
+    points[1, 4] = 7000
+    points[2, 4] = 7000
     print(points)
     previewPlot()
-
 
 
 # toolbar attempt, didn't work
@@ -376,7 +360,6 @@ getPointsButton.grid(row=0, column=2)
 
 testPointsButton = ttk.Button(root, text="test points", command=testPoints)
 testPointsButton.grid(row=0, column=3)
-
 
 # serch for patient
 conn = sqlite3.connect('patients.db')
