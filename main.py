@@ -24,7 +24,8 @@ import sqlite3
 import datetime
 
 # Profiling
-import cProfile, pstats
+import cProfile
+import pstats
 
 profiler = cProfile.Profile()
 profiler.enable()
@@ -112,6 +113,8 @@ def writeToDB(imie, nazwisko, concat):
 
     conn.commit()
     conn.close()
+
+#def plotPoints2d(pointsx, pointsy, window, row, column):
 
 
 def readFromDB(imieNazwisko):
@@ -257,7 +260,7 @@ def connect(portg):
 
     port = portg[0:4]
 
-    # this is dogshit slow, but at least it works
+    # slow,
     # needs to be fixed later
     ser = serial.Serial(port, 115200, timeout=100)
     ser.flushInput()
@@ -346,9 +349,11 @@ toolbar.add_cascade(label="Port", menu=setPort)
 
 setPort.grid(row=0, column = 7)
 """
-# LOOP
 
-if (connected == 0):
+
+# MAINLOOP
+
+if connected == 0:
     testPoints()
     portChoice = ttk.Combobox(root, width=25, value=p.comports())
     portChoice.grid(row=0, column=5)
@@ -410,7 +415,9 @@ CalibrationLabel.grid(row=7, column=2, sticky=W)
 
 root.mainloop()
 
+# terminate profiling
 profiler.disable()
 
+# generate report to console
 stats = pstats.Stats(profiler).sort_stats('cumtime')
 stats.print_stats()
