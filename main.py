@@ -2,6 +2,8 @@
 from tkinter import *
 from tkinter.messagebox import askyesno
 from tkinter import ttk
+
+import numpy
 from ttkthemes import ThemedTk
 
 # Arrays
@@ -77,15 +79,21 @@ def deleteRecord(imieNazwisko):
         conn.commit()
 
 
-def euclid(currentPoints):
-    distances = np.zeros([8])
-    pointsT = currentPoints.transpose()
+def euclid3d(currentPoints):
+        distances = np.zeros([8])
+        pointsT = currentPoints.transpose()
 
+        for i in range(8):
+            distances[i] = round(np.linalg.norm(pointsT[i] - pointsT[i + 1]), 1)
+
+        return distances
+
+def euclid2d(xaxis, yaxis):
+    distances = np.zeros([8])
     for i in range(8):
-        distances[i] = round(np.linalg.norm(pointsT[i] - pointsT[i + 1]), 1)
+        distances[i] = round(numpy.sqrt((xaxis[i]-xaxis[i+1])**2+(yaxis[i]-yaxis[i+1])**2), 1)
 
     return distances
-
 
 def concatenation():
     concat = ""
@@ -113,9 +121,49 @@ def writeToDB(imie, nazwisko, concat):
 
     conn.commit()
     conn.close()
+'''
+def plotPoints2d(pointsx, pointsy, window, row, column):
+    # calculating distances between points
+    distances = euclid(points)
 
-#def plotPoints2d(pointsx, pointsy, window, row, column):
+    # i don't actually know which axis is which here, check it later
+    figxz = Figure(figsize=(5, 5), dpi=100)
 
+    canvas = FigureCanvasTkAgg(figxz, master=root)
+    canvas.draw()
+
+    ax = figxz.add_subplot(111)
+
+    ax.plot(points[0], points[2], 'gray')
+    ax.scatter(points[0], points[2])
+
+    # Show distances between points
+    for i in range(8):
+        xmidpoint = points[0][i] + ((points[0][i + 1] - points[0][i]) / 2)
+        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
+        figxz.text(xmidpoint, zmidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
+                   transform=ax.transData)
+
+    canvas.get_tk_widget().grid(row=1, column=2)
+
+    figyz = Figure(figsize=(5, 5), dpi=100)
+
+    canvas = FigureCanvasTkAgg(figyz, master=root)
+    canvas.draw()
+
+    ax = figyz.add_subplot(111)
+
+    ax.plot(points[1], points[2], 'gray')
+    ax.scatter(points[1], points[2])
+
+    # Show distances between points
+    for i in range(8):
+        ymidpoint = points[1][i] + ((points[1][i + 1] - points[1][i]) / 2)
+        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
+        figyz.text(ymidpoint, zmidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
+                   transform=ax.transData)
+    canvas.get_tk_widget().grid(row=1, column=3)
+'''
 
 def readFromDB(imieNazwisko):
     imieNazwiskoSplit = imieNazwisko.split(" ")
@@ -213,7 +261,7 @@ def readFromDB(imieNazwisko):
 
 def previewPlot():
     # calculating distances between points
-    distances = euclid(points)
+    distancesxz = euclid2d(points[0],points[2])
 
     # i don't actually know which axis is which here, check it later
     figxz = Figure(figsize=(5, 5), dpi=100)
@@ -223,18 +271,19 @@ def previewPlot():
 
     ax = figxz.add_subplot(111)
 
-    ax.plot(points[0], points[2], 'gray')
+    ax.plot(points[0], points[2], 'lightgray')
     ax.scatter(points[0], points[2])
 
     # Show distances between points
     for i in range(8):
         xmidpoint = points[0][i] + ((points[0][i + 1] - points[0][i]) / 2)
         zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
-        figxz.text(xmidpoint, zmidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
+        figxz.text(xmidpoint, zmidpoint, distancesxz[i], horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
 
     canvas.get_tk_widget().grid(row=1, column=2)
 
+    distancesyz = euclid2d(points[1], points[2])
     figyz = Figure(figsize=(5, 5), dpi=100)
 
     canvas = FigureCanvasTkAgg(figyz, master=root)
@@ -242,14 +291,14 @@ def previewPlot():
 
     ax = figyz.add_subplot(111)
 
-    ax.plot(points[1], points[2], 'gray')
+    ax.plot(points[1], points[2], 'lightgray')
     ax.scatter(points[1], points[2])
 
     # Show distances between points
     for i in range(8):
         ymidpoint = points[1][i] + ((points[1][i + 1] - points[1][i]) / 2)
         zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
-        figyz.text(ymidpoint, zmidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
+        figyz.text(ymidpoint, zmidpoint, distancesyz[i], horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
     canvas.get_tk_widget().grid(row=1, column=3)
 
