@@ -79,6 +79,7 @@ def deleteRecord(imieNazwisko):
         conn.commit()
 
 
+
 def euclid3d(currentPoints):
         distances = np.zeros([8])
         pointsT = currentPoints.transpose()
@@ -121,49 +122,31 @@ def writeToDB(imie, nazwisko, concat):
 
     conn.commit()
     conn.close()
-'''
-def plotPoints2d(pointsx, pointsy, window, row, column):
+
+def plotPoints2d(pointsx, pointsy, window):
     # calculating distances between points
-    distances = euclid(points)
+    distances = euclid2d(pointsx, pointsy)
 
     # i don't actually know which axis is which here, check it later
-    figxz = Figure(figsize=(5, 5), dpi=100)
+    figxy = Figure(figsize=(5, 5), dpi=100)
 
-    canvas = FigureCanvasTkAgg(figxz, master=root)
+    canvas = FigureCanvasTkAgg(figxy, master=window)
     canvas.draw()
 
-    ax = figxz.add_subplot(111)
+    ax = figxy.add_subplot(111)
 
     ax.plot(points[0], points[2], 'gray')
     ax.scatter(points[0], points[2])
 
     # Show distances between points
     for i in range(8):
-        xmidpoint = points[0][i] + ((points[0][i + 1] - points[0][i]) / 2)
-        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
-        figxz.text(xmidpoint, zmidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
+        xmidpoint = pointsx[i] + ((pointsx[i + 1] - pointsx[i]) / 2)
+        ymidpoint = pointsy[i] + ((pointsy[i + 1] - pointsy[i]) / 2)
+        figxy.text(xmidpoint, ymidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
 
-    canvas.get_tk_widget().grid(row=1, column=2)
-
-    figyz = Figure(figsize=(5, 5), dpi=100)
-
-    canvas = FigureCanvasTkAgg(figyz, master=root)
-    canvas.draw()
-
-    ax = figyz.add_subplot(111)
-
-    ax.plot(points[1], points[2], 'gray')
-    ax.scatter(points[1], points[2])
-
-    # Show distances between points
-    for i in range(8):
-        ymidpoint = points[1][i] + ((points[1][i + 1] - points[1][i]) / 2)
-        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
-        figyz.text(ymidpoint, zmidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
-                   transform=ax.transData)
-    canvas.get_tk_widget().grid(row=1, column=3)
-'''
+    return canvas.get_tk_widget()
+    #canvas.get_tk_widget().grid(row=row, column=column)
 
 def readFromDB(imieNazwisko):
     imieNazwiskoSplit = imieNazwisko.split(" ")
@@ -302,6 +285,7 @@ def previewPlot():
                    transform=ax.transData)
     canvas.get_tk_widget().grid(row=1, column=3)
 
+
 # Set up usb connection
 def connect(portg):
     global ser
@@ -361,8 +345,11 @@ def getUSBpokaz():
     ser.flushInput()
     # ser.close()
     print(points)
-    previewPlot()
-
+    #previewPlot()
+    xzprojection = plotPoints2d(points[0], points[2], root)
+    xzprojection.grid(row=1, column=2)
+    yzprojection = plotPoints2d(points[1], points[2], root)
+    yzprojection.grid(row=1, column=3)
 
 def portSelect(choice):
     port = choice
@@ -377,12 +364,15 @@ def testPoints():
     points[1, 4] = 7000
     points[2, 4] = 7000
     print(points)
-    previewPlot()
+    #previewPlot()
+    xzprojection = plotPoints2d(points[0], points[2], root)
+    xzprojection.grid(row=1, column=2)
+    yzprojection = plotPoints2d(points[1], points[2], root)
+    yzprojection.grid(row=1, column=3)
 
 
 # toolbar attempt, didn't work
-"""
-toolbar = Menu(root)
+"""toolbar = Menu(root)
 root.config(menu=toolbar)
 
 setPort = Listbox(toolbar)
