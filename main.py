@@ -1,4 +1,5 @@
 # UI
+import math
 from tkinter import *
 from tkinter.messagebox import askyesno
 from tkinter import ttk
@@ -32,12 +33,21 @@ import pstats
 profiler = cProfile.Profile()
 profiler.enable()
 
-ser = 0
+#ser = 0
 connected = 0
+# zeroing array
+zeroing = np.zeros([3, 6])
+
+radious = 65
+
+#
+rawPoints = np.zeros([3, 6])
+
+intake = np.zeros([3,6])
 
 # measurement array
-points = np.zeros([3, 9])
-distances = np.zeros([8])
+points = np.zeros([3, 6])
+distances = np.zeros([5])
 
 # getting default color progression from matplotlib
 colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
@@ -54,6 +64,19 @@ root.wm_title("Spine Mapper")
 style = ttk.Style(root)
 style.theme_use("yaru")
 
+def zeroPoints():
+    global zeroing
+    #zeroing[0][0] = 0
+    for i in range(6):
+        zeroing[0][i] = rawPoints[0][i]
+        zeroing[2][i] = rawPoints[2][i]
+    #print("ZEROED")
+    zeroing[2][1] -= 67.7 - 6
+    zeroing[2][2] -= 121.62
+    zeroing[2][3] -= 182.2
+    zeroing[2][4] -= 242.5
+    zeroing[2][5] -= 303.32
+    print(zeroing)
 
 def deleteMeasurement(imieNazwisko, date):  # DELETES WRONG MEASUREMENT
     if askyesno(title='Potwierdzenie', message='Usunąć dane pacenta?'):
@@ -81,24 +104,24 @@ def deleteRecord(imieNazwisko):
 
 
 def euclid3d(currentPoints):
-        distances = np.zeros([8])
+        distances = np.zeros([5])
         pointsT = currentPoints.transpose()
 
-        for i in range(8):
+        for i in range(5):
             distances[i] = round(np.linalg.norm(pointsT[i] - pointsT[i + 1]), 1)
 
         return distances
 
 def euclid2d(xaxis, yaxis):
-    distances = np.zeros([8])
-    for i in range(8):
+    distances = np.zeros([5])
+    for i in range(5):
         distances[i] = round(numpy.sqrt((xaxis[i]-xaxis[i+1])**2+(yaxis[i]-yaxis[i+1])**2), 1)
 
     return distances
 
 def concatenation():
     concat = ""
-    for i in range(9):
+    for i in range(6):
         concat += str(points[0, i]) + "," + str(points[1, i]) + "," + str(points[2, i]) + ";"
     return concat
 
@@ -126,6 +149,10 @@ def writeToDB(imie, nazwisko, concat):
 def plotPoints2d(pointsx, pointsy, window):
     # calculating distances between points
     distances = euclid2d(pointsx, pointsy)
+    print("x")
+    print(pointsx)
+    print("y")
+    print(pointsy)
 
     # i don't actually know which axis is which here, check it later
     figxy = Figure(figsize=(5, 5), dpi=100)
@@ -135,15 +162,27 @@ def plotPoints2d(pointsx, pointsy, window):
 
     ax = figxy.add_subplot(111)
 
-    ax.plot(points[0], points[2], 'gray')
-    ax.scatter(points[0], points[2])
+    ax.plot(pointsx, pointsy, 'gray')
+    ax.scatter(pointsx, pointsy)
+
+    ax.set_xlim([-100, 100])
+    ax.set_ylim([-150, 1200])
 
     # Show distances between points
-    for i in range(8):
+    for i in range(5):
         xmidpoint = pointsx[i] + ((pointsx[i + 1] - pointsx[i]) / 2)
         ymidpoint = pointsy[i] + ((pointsy[i + 1] - pointsy[i]) / 2)
         figxy.text(xmidpoint, ymidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
+
+    slope = np.zeros([5])
+    angle = np.zeros([5])
+
+    for i in range(5):
+        slope[i] = ((pointsy[i+1] - pointsy[i])/(pointsx[i+1] - pointsx[i]))
+        angle[i] = round(math.degrees(math.atan(slope[i])),2)
+        figxy.text(pointsx[i],pointsy[i], angle[i], horizontalalignment='center', verticalalignment='center', transform=ax.transData)
+
 
     return canvas.get_tk_widget()
     #canvas.get_tk_widget().grid(row=row, column=column)
@@ -187,7 +226,7 @@ def readFromDB(imieNazwisko):
         pointsParsed = pointString.split(";")  # do it porperly tomorow
         print(pointsParsed)
 
-        for i in range(9):
+        for i in range(6):
             pointsParsedSeparate = pointsParsed[i].split(",")
             points[0, i] = pointsParsedSeparate[0]
             points[1, i] = pointsParsedSeparate[1]
@@ -258,7 +297,7 @@ def previewPlot():
     ax.scatter(points[0], points[2])
 
     # Show distances between points
-    for i in range(8):
+    for i in range(5):
         xmidpoint = points[0][i] + ((points[0][i + 1] - points[0][i]) / 2)
         zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
         figxz.text(xmidpoint, zmidpoint, distancesxz[i], horizontalalignment='center', verticalalignment='center',
@@ -278,7 +317,7 @@ def previewPlot():
     ax.scatter(points[1], points[2])
 
     # Show distances between points
-    for i in range(8):
+    for i in range(5):
         ymidpoint = points[1][i] + ((points[1][i + 1] - points[1][i]) / 2)
         zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
         figyz.text(ymidpoint, zmidpoint, distancesyz[i], horizontalalignment='center', verticalalignment='center',
@@ -298,6 +337,8 @@ def connect(portg):
     ser = serial.Serial(port, 115200, timeout=100)
     ser.flushInput()
     connected = 1
+    if(connected == 1):
+        print("conneectarino");
 
 
 # Get point positions over usb
@@ -310,9 +351,9 @@ def getUSB():
         data = ser.readline()
         decoded = data.decode('utf8')
 
-        if "," in decoded:
+        if ";" in decoded:
             index += 1
-            separate = decoded.split(",")
+            separate = decoded.split(";")
             points[0, index] = int(separate[0])
             points[1, index] = int(separate[1])
             points[2, index] = int(separate[2])
@@ -327,27 +368,62 @@ def getUSB():
 
 # Get x, y of one arm for showcase purpose
 def getUSBpokaz():
+    index = -1
+
     # CHECK THIS FOR OVERHEAD
     # this has to get more than one line, because readline stops at \n, but starts wherever, so before it was
     # getting a random amount of bytes from the back of a packet
-    data = ser.readlines(16)
+    data = ser.readlines(250)
 
-    print(data[1])
-    decoded = data[1].decode('utf8')
-    if "," in decoded:
-        separate = decoded.split(",")
-        print(separate)
-        if separate[0] != '' and separate[1][0] != '':
-            points[0, 0] = int(separate[0]) / int(Calibration.get())
-            points[1, 0] = int(separate[1]) / int(Calibration.get())
+    #print(data)
+    for i in range(12):
 
-    # check this
+        decoded = data[i].decode('utf8')
+
+        if ";" in decoded:
+            index += 1
+            separate = decoded.split(";")
+            #print(separate)
+            if separate[0] != '' and separate[1][0] != '':
+                separate[0] = str(separate[0]).replace('.', '')
+                separate[1] = str(separate[1]).replace('.', '')
+                separate[2] = str(separate[2]).replace('.', '')
+                #print(separate[0])
+                #print(separate[1])
+                #print(separate[2])
+                intake[0, index] = int(separate[0])# / int(Calibration.get())
+                rawPoints[0, index] = intake[0, index]*(3.2/18)
+                intake[1, index] = int(separate[1])# / int(Calibration.get())
+                rawPoints[1, index] = radious * math.cos(math.radians(intake[1, index] * (360/4096)))
+                intake[2, index] = int(separate[2])# / int(Calibration.get())
+                rawPoints[2, index] = intake[2, index]*(3.2/18)
+
+
+        if "BEGIN" in decoded:
+            index = -1
+
+        # check this
     ser.flushInput()
     # ser.close()
+    #print(rawPoints)
+    #zeroing = rawPoints
+
+    points = np.subtract(rawPoints, zeroing)
+    for i in range(5):
+        points[2][i] = points[2][i] + (radious * math.sin(math.radians(intake[1, i] * (360 / 4096))))
+        print("/////////////")
+        print(radious * math.sin(math.radians(intake[1, i] * (360 / 4096))))
+    print("points:")
     print(points)
+    print("zeroing array:")
+    print(zeroing)
+    #print(points[0])
+   # print(points[2])
     #previewPlot()
+    print("xz:")
     xzprojection = plotPoints2d(points[0], points[2], root)
     xzprojection.grid(row=1, column=2)
+    print("yz:")
     yzprojection = plotPoints2d(points[1], points[2], root)
     yzprojection.grid(row=1, column=3)
 
@@ -356,7 +432,7 @@ def portSelect(choice):
 
 
 def testPoints():
-    for i in range(9):
+    for i in range(6):
         points[0, i] = i * 1000
         points[1, i] = (i + 2) * 1000
         points[2, i] = (i + 4) * 1000
@@ -393,7 +469,7 @@ setPort.grid(row=0, column = 7)
 # MAINLOOP
 
 if connected == 0:
-    testPoints()
+    #testPoints()
     portChoice = ttk.Combobox(root, width=25, value=p.comports())
     portChoice.grid(row=0, column=5)
     connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
@@ -406,51 +482,49 @@ testPointsButton = ttk.Button(root, text="test points", command=testPoints)
 testPointsButton.grid(row=0, column=3)
 
 # serch for patient
-conn = sqlite3.connect('patients.db')
-c = conn.cursor()
-c.execute("""CREATE TABLE IF NOT EXISTS patients (
-       imie text,
-       nazwisko text,
-       points text,
-       czas text
-   )""")
+#conn = sqlite3.connect('patients.db')
+#c = conn.cursor()
+#c.execute("""CREATE TABLE IF NOT EXISTS patients (
+#       imie text,
+#       nazwisko text,
+#       points text,
+ #      czas text
+ #  )""")
 
-conn = sqlite3.connect('patients.db')
-c = conn.cursor()
-c.execute("SELECT imie FROM patients")
-imiona = c.fetchall()
-c.execute("SELECT nazwisko FROM patients")
-nazwiska = c.fetchall()
-imionaNazwiska = []
-for i in range(len(imiona)):
-    imionaNazwiska.append(imiona[i] + nazwiska[i])
-conn.commit()
-SearchField = ttk.Combobox(root, width=25, value=imionaNazwiska)
-SearchField.grid(row=0, column=1)
-SearchButton = ttk.Button(root, text="Szukaj", command=lambda: readFromDB(SearchField.get()))
-SearchButton.grid(row=1, column=1, sticky=N)
+#conn = sqlite3.connect('patients.db')
+#c = conn.cursor()
+#c.execute("SELECT imie FROM patients")
+#imiona = c.fetchall()
+#c.execute("SELECT nazwisko FROM patients")
+#nazwiska = c.fetchall()
+#imionaNazwiska = []
+#for i in range(len(imiona)):
+ #   imionaNazwiska.append(imiona[i] + nazwiska[i])
+#conn.commit()
+#SearchField = ttk.Combobox(root, width=25, value=imionaNazwiska)
+#SearchField.grid(row=0, column=1)
+#SearchButton = ttk.Button(root, text="Szukaj", command=lambda: readFromDB(SearchField.get()))
+#SearchButton.grid(row=1, column=1, sticky=N)
 
 # record data
-ImieLabel = ttk.Label(root, text="Imię:")
-ImieLabel.grid(row=4, column=1, sticky=E)
-ImieField = ttk.Entry(root, width=40)
-ImieField.grid(row=4, column=2)
-NazwiskoLabel = ttk.Label(root, text="Nazwisko:")
-NazwiskoLabel.grid(row=5, column=1, sticky=E)
-NazwiskoField = ttk.Entry(root, width=40)
-NazwiskoField.grid(row=5, column=2)
+#ImieLabel = ttk.Label(root, text="Imię:")
+#ImieLabel.grid(row=4, column=1, sticky=E)
+#ImieField = ttk.Entry(root, width=40)
+#ImieField.grid(row=4, column=2)
+#NazwiskoLabel = ttk.Label(root, text="Nazwisko:")
+#NazwiskoLabel.grid(row=5, column=1, sticky=E)
+#NazwiskoField = ttk.Entry(root, width=40)
+#NazwiskoField.grid(row=5, column=2)
 
 # save button
-saveButton = ttk.Button(root, text="Zapisz",
-                        command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
-saveButton.grid(row=6, column=2)
+#saveButton = ttk.Button(root, text="Zapisz",
+#                        command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
+#saveButton.grid(row=6, column=2)
 
 # Rudimentary calibration
-Calibration = ttk.Entry(root, width=40)
-Calibration.insert(0, "300")
-Calibration.grid(row=7, column=1)
-CalibrationLabel = ttk.Label(root, text="<-- dzielnik do kalibracji")
-CalibrationLabel.grid(row=7, column=2, sticky=W)
+zeroButton = ttk.Button(root, text="Zeruj", command=zeroPoints)
+zeroButton.grid(row=7, column=1)
+
 
 root.mainloop()
 
