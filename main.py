@@ -60,9 +60,12 @@ separate = []
 root = ThemedTk()
 root.wm_title("Spine Mapper")
 
+root.state('zoomed')
+
 # Widgets style
 style = ttk.Style(root)
 style.theme_use("yaru")
+
 
 def zeroPoints():
     global zeroing
@@ -77,6 +80,7 @@ def zeroPoints():
     zeroing[2][4] -= 242.5
     zeroing[2][5] -= 303.32
     print(zeroing)
+    statusBar["text"] = "wyzerowano"
 
 def deleteMeasurement(imieNazwisko, date):  # DELETES WRONG MEASUREMENT
     if askyesno(title='Potwierdzenie', message='Usunąć dane pacenta?'):
@@ -338,7 +342,7 @@ def connect(portg):
     ser.flushInput()
     connected = 1
     if(connected == 1):
-        print("conneectarino");
+        statusBar["text"] = "Connected to " + portg[0:4]
 
 
 # Get point positions over usb
@@ -422,36 +426,47 @@ def getUSBpokaz():
     #previewPlot()
     print("xz:")
     xzprojection = plotPoints2d(points[0], points[2], root)
-    xzprojection.grid(row=1, column=2)
+    xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2)
     print("yz:")
     yzprojection = plotPoints2d(points[1], points[2], root)
-    yzprojection.grid(row=1, column=3)
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
 
 def portSelect(choice):
     port = choice
 
+def printOut():
+    statusBar["text"] = "Printing..."
+
 
 def testPoints():
-    for i in range(6):
-        points[0, i] = i * 1000
-        points[1, i] = (i + 2) * 1000
-        points[2, i] = (i + 4) * 1000
-    points[0, 4] = 7000
-    points[1, 4] = 7000
-    points[2, 4] = 7000
+    for i in range(5):
+        points[0, i] = i * 10
+        points[1, i] = (i + 2) * 10
+        points[2, i] = (i + 4) * 10
+    points[0, 4] = 30
+    points[1, 4] = 30
+    points[2, 4] = 30
     print(points)
     #previewPlot()
     xzprojection = plotPoints2d(points[0], points[2], root)
-    xzprojection.grid(row=1, column=2)
+    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3)
     yzprojection = plotPoints2d(points[1], points[2], root)
-    yzprojection.grid(row=1, column=3)
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
+    statusBar["text"] = "wygenerowano punkty testowe"
 
 
 # toolbar attempt, didn't work
-"""toolbar = Menu(root)
-root.config(menu=toolbar)
+menubar = Menu(root)
+root.config(menu=menubar)
 
-setPort = Listbox(toolbar)
+fileMenu = Menu(menubar, tearoff=0)
+menubar.add_cascade(label="File", menu=fileMenu)
+fileMenu.add_command(label="Print", command=printOut)
+
+menubar.add_command(label="Punkty testowe", command=testPoints)
+
+
+"""setPort = Listbox(toolbar)
 
 
 ports = p.comports()
@@ -470,61 +485,63 @@ setPort.grid(row=0, column = 7)
 
 if connected == 0:
     #testPoints()
-    portChoice = ttk.Combobox(root, width=25, value=p.comports())
+    portChoice = ttk.Combobox(root, value=p.comports())
     portChoice.grid(row=0, column=5)
     connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
     connectButton.grid(row=0, column=6)
 
 getPointsButton = ttk.Button(root, text="pobierz koordynaty", command=getUSBpokaz)
-getPointsButton.grid(row=0, column=2)
+getPointsButton.grid(row=0, column=2, pady=20, padx=20)
 
 testPointsButton = ttk.Button(root, text="test points", command=testPoints)
-testPointsButton.grid(row=0, column=3)
+testPointsButton.grid(row=0, column=3, pady=20, padx=20)
 
 # serch for patient
-#conn = sqlite3.connect('patients.db')
-#c = conn.cursor()
-#c.execute("""CREATE TABLE IF NOT EXISTS patients (
-#       imie text,
-#       nazwisko text,
-#       points text,
- #      czas text
- #  )""")
-
-#conn = sqlite3.connect('patients.db')
-#c = conn.cursor()
-#c.execute("SELECT imie FROM patients")
-#imiona = c.fetchall()
-#c.execute("SELECT nazwisko FROM patients")
-#nazwiska = c.fetchall()
-#imionaNazwiska = []
-#for i in range(len(imiona)):
- #   imionaNazwiska.append(imiona[i] + nazwiska[i])
-#conn.commit()
-#SearchField = ttk.Combobox(root, width=25, value=imionaNazwiska)
-#SearchField.grid(row=0, column=1)
-#SearchButton = ttk.Button(root, text="Szukaj", command=lambda: readFromDB(SearchField.get()))
-#SearchButton.grid(row=1, column=1, sticky=N)
+conn = sqlite3.connect('patients.db')
+c = conn.cursor()
+c.execute("""CREATE TABLE IF NOT EXISTS patients (
+       imie text,
+       nazwisko text,
+       points text,
+       czas text
+   )""")
+#
+# conn = sqlite3.connect('patients.db')
+# c = conn.cursor()
+# c.execute("SELECT imie FROM patients")
+# imiona = c.fetchall()
+# c.execute("SELECT nazwisko FROM patients")
+# nazwiska = c.fetchall()
+# imionaNazwiska = []
+# for i in range(len(imiona)):
+#   imionaNazwiska.append(imiona[i] + nazwiska[i])
+# conn.commit()
+# SearchField = ttk.Combobox(root, width=25, value=imionaNazwiska)
+# SearchField.grid(row=0, column=1)
+# SearchButton = ttk.Button(root, text="Szukaj", command=lambda: readFromDB(SearchField.get()))
+# SearchButton.grid(row=1, column=1, sticky=N)
 
 # record data
-#ImieLabel = ttk.Label(root, text="Imię:")
-#ImieLabel.grid(row=4, column=1, sticky=E)
-#ImieField = ttk.Entry(root, width=40)
-#ImieField.grid(row=4, column=2)
-#NazwiskoLabel = ttk.Label(root, text="Nazwisko:")
-#NazwiskoLabel.grid(row=5, column=1, sticky=E)
-#NazwiskoField = ttk.Entry(root, width=40)
-#NazwiskoField.grid(row=5, column=2)
+ImieLabel = ttk.Label(root, text="Imię:")
+ImieLabel.grid(row=1, column=6, sticky=N+E)
+ImieField = ttk.Entry(root, width=40)
+ImieField.grid(row=1, column=7, sticky=N)
+NazwiskoLabel = ttk.Label(root, text="Nazwisko:")
+NazwiskoLabel.grid(row=2, column=6, sticky=N+E)
+NazwiskoField = ttk.Entry(root, width=40)
+NazwiskoField.grid(row=2, column=7, sticky=N)
 
 # save button
-#saveButton = ttk.Button(root, text="Zapisz",
-#                        command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
-#saveButton.grid(row=6, column=2)
+saveButton = ttk.Button(root, text="Zapisz",
+                        command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
+saveButton.grid(row=3, column=6)
 
 # Rudimentary calibration
 zeroButton = ttk.Button(root, text="Zeruj", command=zeroPoints)
-zeroButton.grid(row=7, column=1)
+zeroButton.grid(row=0, column=1)
 
+statusBar = ttk.Label(root, text="status", border=1, relief=SUNKEN, anchor=E)
+statusBar.grid(rowspan=8, columnspan=10, sticky=W+E)
 
 root.mainloop()
 
