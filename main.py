@@ -1,8 +1,9 @@
 # UI
 import math
-from tkinter import *
+import tkinter as tk
 from tkinter.messagebox import askyesno
 from tkinter import ttk
+from tkcalendar import DateEntry
 
 import numpy
 from ttkthemes import ThemedTk
@@ -61,6 +62,10 @@ root = ThemedTk()
 root.wm_title("Spine Mapper")
 
 root.state('zoomed')
+
+root.columnconfigure(2, weight=1)
+root.columnconfigure(4, weight=1)
+root.rowconfigure(1, weight=1)
 
 # Widgets style
 style = ttk.Style(root)
@@ -284,51 +289,6 @@ def readFromDB(imieNazwisko):
 
     conn.close()
 
-
-def previewPlot():
-    # calculating distances between points
-    distancesxz = euclid2d(points[0],points[2])
-
-    # i don't actually know which axis is which here, check it later
-    figxz = Figure(figsize=(5, 5), dpi=100)
-
-    canvas = FigureCanvasTkAgg(figxz, master=root)
-    canvas.draw()
-
-    ax = figxz.add_subplot(111)
-
-    ax.plot(points[0], points[2], 'lightgray')
-    ax.scatter(points[0], points[2])
-
-    # Show distances between points
-    for i in range(5):
-        xmidpoint = points[0][i] + ((points[0][i + 1] - points[0][i]) / 2)
-        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
-        figxz.text(xmidpoint, zmidpoint, distancesxz[i], horizontalalignment='center', verticalalignment='center',
-                   transform=ax.transData)
-
-    canvas.get_tk_widget().grid(row=1, column=2)
-
-    distancesyz = euclid2d(points[1], points[2])
-    figyz = Figure(figsize=(5, 5), dpi=100)
-
-    canvas = FigureCanvasTkAgg(figyz, master=root)
-    canvas.draw()
-
-    ax = figyz.add_subplot(111)
-
-    ax.plot(points[1], points[2], 'lightgray')
-    ax.scatter(points[1], points[2])
-
-    # Show distances between points
-    for i in range(5):
-        ymidpoint = points[1][i] + ((points[1][i + 1] - points[1][i]) / 2)
-        zmidpoint = points[2][i] + ((points[2][i + 1] - points[2][i]) / 2)
-        figyz.text(ymidpoint, zmidpoint, distancesyz[i], horizontalalignment='center', verticalalignment='center',
-                   transform=ax.transData)
-    canvas.get_tk_widget().grid(row=1, column=3)
-
-
 # Set up usb connection
 def connect(portg):
     global ser
@@ -345,32 +305,8 @@ def connect(portg):
         statusBar["text"] = "Connected to " + portg[0:4]
 
 
-# Get point positions over usb
-def getUSB():
-    index = -1
 
-    for i in range(18):
-
-        # recieve from the board over USB
-        data = ser.readline()
-        decoded = data.decode('utf8')
-
-        if ";" in decoded:
-            index += 1
-            separate = decoded.split(";")
-            points[0, index] = int(separate[0])
-            points[1, index] = int(separate[1])
-            points[2, index] = int(separate[2])
-
-        if "BEGIN" in decoded:
-            index = -1
-
-    # ser.close()
-    print(points)
-    previewPlot()
-
-
-# Get x, y of one arm for showcase purpose
+# Get points over usb
 def getUSBpokaz():
     index = -1
 
@@ -449,35 +385,34 @@ def testPoints():
     print(points)
     #previewPlot()
     xzprojection = plotPoints2d(points[0], points[2], root)
-    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3)
+    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS")
     yzprojection = plotPoints2d(points[1], points[2], root)
-    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS")
     statusBar["text"] = "wygenerowano punkty testowe"
 
 
 # toolbar attempt, didn't work
-menubar = Menu(root)
+menubar = tk.Menu(root)
 root.config(menu=menubar)
 
-fileMenu = Menu(menubar, tearoff=0)
-menubar.add_cascade(label="File", menu=fileMenu)
-fileMenu.add_command(label="Print", command=printOut)
+fileMenu = tk.Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Plik", menu=fileMenu)
+fileMenu.add_command(label="Drukuj", command=printOut)
+fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
 
 menubar.add_command(label="Punkty testowe", command=testPoints)
 
-
-"""setPort = Listbox(toolbar)
-
-
+""" propably best to do it with more stuff connected
+setPort = Listbox(menubar)
 ports = p.comports()
 #portList = []
 for i in ports:
     setPort.insert(END, i)
 print(setPort)
 #settings.
-toolbar.add_cascade(label="Port", menu=setPort)
+menubar.add_cascade(label="Port", menu=setPort)
 
-setPort.grid(row=0, column = 7)
+#setPort.grid(row=0, column = 7)
 """
 
 
@@ -491,10 +426,7 @@ if connected == 0:
     connectButton.grid(row=0, column=6)
 
 getPointsButton = ttk.Button(root, text="pobierz koordynaty", command=getUSBpokaz)
-getPointsButton.grid(row=0, column=2, pady=20, padx=20)
-
-testPointsButton = ttk.Button(root, text="test points", command=testPoints)
-testPointsButton.grid(row=0, column=3, pady=20, padx=20)
+getPointsButton.grid(row=0, column=2)
 
 # serch for patient
 conn = sqlite3.connect('patients.db')
@@ -522,26 +454,45 @@ c.execute("""CREATE TABLE IF NOT EXISTS patients (
 # SearchButton.grid(row=1, column=1, sticky=N)
 
 # record data
-ImieLabel = ttk.Label(root, text="Imię:")
-ImieLabel.grid(row=1, column=6, sticky=N+E)
-ImieField = ttk.Entry(root, width=40)
-ImieField.grid(row=1, column=7, sticky=N)
-NazwiskoLabel = ttk.Label(root, text="Nazwisko:")
-NazwiskoLabel.grid(row=2, column=6, sticky=N+E)
-NazwiskoField = ttk.Entry(root, width=40)
-NazwiskoField.grid(row=2, column=7, sticky=N)
+personalInfoFrame = ttk.Frame(root)
+personalInfoFrame.grid(row=1, column=6)
 
-# save button
-saveButton = ttk.Button(root, text="Zapisz",
-                        command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
-saveButton.grid(row=3, column=6)
+ImieLabel = ttk.Label(personalInfoFrame, text="Imię:")
+ImieLabel.grid(row=0, column=0, sticky="NE")
+ImieField = ttk.Entry(personalInfoFrame, width=40)
+ImieField.grid(row=0, column=1)
+NazwiskoLabel = ttk.Label(personalInfoFrame, text="Nazwisko:")
+NazwiskoLabel.grid(row=1, column=0, sticky="NE")
+NazwiskoField = ttk.Entry(personalInfoFrame, width=40)
+NazwiskoField.grid(row=1, column=1)
 
-# Rudimentary calibration
+DataUrodzeniaLabel = ttk.Label(personalInfoFrame, text="Data Urodzenia:")
+DataUrodzeniaLabel.grid(row=2, column=0, sticky="NE")
+#DataUrodzeniaField = ttk.Entry(personalInfoFrame, width=40)
+#DataUrodzeniaField.grid(row=2, column=1)
+DataUrodzeniaSelector = DateEntry(personalInfoFrame, selectmode='day')
+DataUrodzeniaSelector.grid(row=2, column=1, sticky="W")
+
+PeselLabel = ttk.Label(personalInfoFrame, text="PESEL:")
+PeselLabel.grid(row=3, column=0)
+PeselField = ttk.Entry(personalInfoFrame, width=40)
+PeselField.grid(row=3, column=1)
+DataPomiaruLabel = ttk.Label(personalInfoFrame, text="Data Pomiaru:")
+DataPomiaruLabel.grid(row=4, column=0)
+DataPomiaruField = ttk.Entry(personalInfoFrame, width=40)
+DataPomiaruField.grid(row=4, column=1)
+NotesLabel = ttk.Label(personalInfoFrame, text="Opis:")
+NotesLabel.grid(row=5, column=0)
+NotesField = tk.Text(personalInfoFrame,width=30)
+NotesField.grid(row=5, column=1)
+
+
+# Zeroing
 zeroButton = ttk.Button(root, text="Zeruj", command=zeroPoints)
 zeroButton.grid(row=0, column=1)
 
-statusBar = ttk.Label(root, text="status", border=1, relief=SUNKEN, anchor=E)
-statusBar.grid(rowspan=8, columnspan=10, sticky=W+E)
+statusBar = ttk.Label(root, text="status", border=1, relief=tk.SUNKEN, anchor="se")
+statusBar.grid(rowspan=8, columnspan=10, sticky="SWE")
 
 root.mainloop()
 
