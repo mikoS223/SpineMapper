@@ -25,11 +25,14 @@ import serial.tools.list_ports as p
 import sqlite3
 
 # Time
-import datetime
+from datetime import datetime
 
 # Profiling
 import cProfile
 import pstats
+
+now = datetime.now()
+
 
 profiler = cProfile.Profile()
 profiler.enable()
@@ -366,6 +369,7 @@ def getUSBpokaz():
     print("yz:")
     yzprojection = plotPoints2d(points[1], points[2], root)
     yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
+    now = datetime.now()
 
 def portSelect(choice):
     port = choice
@@ -470,7 +474,7 @@ DataUrodzeniaLabel = ttk.Label(personalInfoFrame, text="Data Urodzenia:")
 DataUrodzeniaLabel.grid(row=2, column=0, sticky="NE")
 #DataUrodzeniaField = ttk.Entry(personalInfoFrame, width=40)
 #DataUrodzeniaField.grid(row=2, column=1)
-DataUrodzeniaSelector = DateEntry(personalInfoFrame, selectmode='day')
+DataUrodzeniaSelector = DateEntry(personalInfoFrame, selectmode='day', year=2000, month=1, day=1)
 DataUrodzeniaSelector.grid(row=2, column=1, sticky="W")
 
 PeselLabel = ttk.Label(personalInfoFrame, text="PESEL:")
@@ -481,6 +485,7 @@ DataPomiaruLabel = ttk.Label(personalInfoFrame, text="Data Pomiaru:")
 DataPomiaruLabel.grid(row=4, column=0)
 DataPomiaruField = ttk.Entry(personalInfoFrame, width=40)
 DataPomiaruField.grid(row=4, column=1)
+DataPomiaruField.insert(0, now.strftime("%d/%m/%Y %H:%M:%S"))
 NotesLabel = ttk.Label(personalInfoFrame, text="Opis:")
 NotesLabel.grid(row=5, column=0)
 NotesField = tk.Text(personalInfoFrame,width=30)
