@@ -388,12 +388,18 @@ def portSelect(choice):
     port = choice
 
 
-def printOut():
+def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     statusBar["text"] = "Printing..."
     pdf = PDF()
     pdf.add_page()
     pdf.image("xzprojection.png",h=125)
     pdf.image("yzprojection.png",h=125)
+    pdf.text(imie)
+    pdf.text(nazwisko)
+    pdf.text(dataUrodzenia)
+    pdf.text(pesel)
+    pdf.text(dataPomiaru)
+    pdf.text(opis)
     pdf.output('pomiar.pdf', 'F')
 
 
@@ -420,7 +426,7 @@ root.config(menu=menubar)
 
 fileMenu = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Plik", menu=fileMenu)
-fileMenu.add_command(label="Drukuj", command=printOut)
+fileMenu.add_command(label="Drukuj", command=lambda: printOut(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get(), PeselField.get(), DataPomiaruField.get(), NotesField.get()))
 fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
 
 menubar.add_command(label="Punkty testowe", command=testPoints)
