@@ -394,12 +394,12 @@ def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     pdf.add_page()
     pdf.image("xzprojection.png",h=125)
     pdf.image("yzprojection.png",h=125)
-    pdf.text(imie)
-    pdf.text(nazwisko)
-    pdf.text(dataUrodzenia)
-    pdf.text(pesel)
-    pdf.text(dataPomiaru)
-    pdf.text(opis)
+    pdf.text(imie, y=10)
+    pdf.text(nazwisko, y=20)
+    pdf.text(dataUrodzenia, y=30)
+    pdf.text(pesel, y=40)
+    pdf.text(dataPomiaru, y =50)
+    pdf.text(opis, y=60)
     pdf.output('pomiar.pdf', 'F')
 
 
@@ -426,7 +426,7 @@ root.config(menu=menubar)
 
 fileMenu = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Plik", menu=fileMenu)
-fileMenu.add_command(label="Drukuj", command=lambda: printOut(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get(), PeselField.get(), DataPomiaruField.get(), NotesField.get()))
+fileMenu.add_command(label="Drukuj", command=lambda: printOut(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get_date(), PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
 fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
 
 menubar.add_command(label="Punkty testowe", command=testPoints)
