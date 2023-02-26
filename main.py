@@ -392,6 +392,8 @@ def printOut():
     statusBar["text"] = "Printing..."
     pdf = PDF()
     pdf.add_page()
+    pdf.image("xzprojection.png",h=125)
+    pdf.image("yzprojection.png",h=125)
     pdf.output('pomiar.pdf', 'F')
 
 
