@@ -4,3 +4,4 @@ pyserial==3.5
 ttkthemes==3.2.2
 
 tkcalendar~=1.6.1
+fpdf~=1.7.2

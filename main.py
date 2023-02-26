@@ -31,13 +31,21 @@ from datetime import datetime
 import cProfile
 import pstats
 
-now = datetime.now()
+# Printout
+from fpdf import FPDF
 
+
+class PDF(FPDF):
+    pass
+
+
+# get date time CHANGE LATER
+now = datetime.now()
 
 profiler = cProfile.Profile()
 profiler.enable()
 
-#ser = 0
+# ser = 0
 connected = 0
 # zeroing array
 zeroing = np.zeros([3, 6])
@@ -47,7 +55,7 @@ radious = 65
 #
 rawPoints = np.zeros([3, 6])
 
-intake = np.zeros([3,6])
+intake = np.zeros([3, 6])
 
 # measurement array
 points = np.zeros([3, 6])
@@ -77,11 +85,11 @@ style.theme_use("yaru")
 
 def zeroPoints():
     global zeroing
-    #zeroing[0][0] = 0
+    # zeroing[0][0] = 0
     for i in range(6):
         zeroing[0][i] = rawPoints[0][i]
         zeroing[2][i] = rawPoints[2][i]
-    #print("ZEROED")
+    # print("ZEROED")
     zeroing[2][1] -= 67.7 - 6
     zeroing[2][2] -= 121.62
     zeroing[2][3] -= 182.2
@@ -89,6 +97,7 @@ def zeroPoints():
     zeroing[2][5] -= 303.32
     print(zeroing)
     statusBar["text"] = "wyzerowano"
+
 
 def deleteMeasurement(imieNazwisko, date):  # DELETES WRONG MEASUREMENT
     if askyesno(title='Potwierdzenie', message='Usunąć dane pacenta?'):
@@ -114,22 +123,23 @@ def deleteRecord(imieNazwisko):
         conn.commit()
 
 
-
 def euclid3d(currentPoints):
-        distances = np.zeros([5])
-        pointsT = currentPoints.transpose()
+    distances = np.zeros([5])
+    pointsT = currentPoints.transpose()
 
-        for i in range(5):
-            distances[i] = round(np.linalg.norm(pointsT[i] - pointsT[i + 1]), 1)
+    for i in range(5):
+        distances[i] = round(np.linalg.norm(pointsT[i] - pointsT[i + 1]), 1)
 
-        return distances
+    return distances
+
 
 def euclid2d(xaxis, yaxis):
     distances = np.zeros([5])
     for i in range(5):
-        distances[i] = round(numpy.sqrt((xaxis[i]-xaxis[i+1])**2+(yaxis[i]-yaxis[i+1])**2), 1)
+        distances[i] = round(numpy.sqrt((xaxis[i] - xaxis[i + 1]) ** 2 + (yaxis[i] - yaxis[i + 1]) ** 2), 1)
 
     return distances
+
 
 def concatenation():
     concat = ""
@@ -158,7 +168,8 @@ def writeToDB(imie, nazwisko, concat):
     conn.commit()
     conn.close()
 
-def plotPoints2d(pointsx, pointsy, window):
+
+def plotPoints2d(pointsx, pointsy, window, saveAs):
     # calculating distances between points
     distances = euclid2d(pointsx, pointsy)
     print("x")
@@ -191,13 +202,15 @@ def plotPoints2d(pointsx, pointsy, window):
     angle = np.zeros([5])
 
     for i in range(5):
-        slope[i] = ((pointsy[i+1] - pointsy[i])/(pointsx[i+1] - pointsx[i]))
-        angle[i] = round(math.degrees(math.atan(slope[i])),2)
-        figxy.text(pointsx[i],pointsy[i], angle[i], horizontalalignment='center', verticalalignment='center', transform=ax.transData)
+        slope[i] = ((pointsy[i + 1] - pointsy[i]) / (pointsx[i + 1] - pointsx[i]))
+        angle[i] = round(math.degrees(math.atan(slope[i])), 2)
+        figxy.text(pointsx[i], pointsy[i], angle[i], horizontalalignment='center', verticalalignment='center',
+                   transform=ax.transData)
 
-
+    figxy.savefig(saveAs)
     return canvas.get_tk_widget()
-    #canvas.get_tk_widget().grid(row=row, column=column)
+    # canvas.get_tk_widget().grid(row=row, column=column)
+
 
 def readFromDB(imieNazwisko):
     imieNazwiskoSplit = imieNazwisko.split(" ")
@@ -292,6 +305,7 @@ def readFromDB(imieNazwisko):
 
     conn.close()
 
+
 # Set up usb connection
 def connect(portg):
     global ser
@@ -304,9 +318,8 @@ def connect(portg):
     ser = serial.Serial(port, 115200, timeout=100)
     ser.flushInput()
     connected = 1
-    if(connected == 1):
+    if (connected == 1):
         statusBar["text"] = "Connected to " + portg[0:4]
-
 
 
 # Get points over usb
@@ -318,7 +331,7 @@ def getUSBpokaz():
     # getting a random amount of bytes from the back of a packet
     data = ser.readlines(250)
 
-    #print(data)
+    # print(data)
     for i in range(12):
 
         decoded = data[i].decode('utf8')
@@ -326,21 +339,20 @@ def getUSBpokaz():
         if ";" in decoded:
             index += 1
             separate = decoded.split(";")
-            #print(separate)
+            # print(separate)
             if separate[0] != '' and separate[1][0] != '':
                 separate[0] = str(separate[0]).replace('.', '')
                 separate[1] = str(separate[1]).replace('.', '')
                 separate[2] = str(separate[2]).replace('.', '')
-                #print(separate[0])
-                #print(separate[1])
-                #print(separate[2])
-                intake[0, index] = int(separate[0])# / int(Calibration.get())
-                rawPoints[0, index] = intake[0, index]*(3.2/18)
-                intake[1, index] = int(separate[1])# / int(Calibration.get())
-                rawPoints[1, index] = radious * math.cos(math.radians(intake[1, index] * (360/4096)))
-                intake[2, index] = int(separate[2])# / int(Calibration.get())
-                rawPoints[2, index] = intake[2, index]*(3.2/18)
-
+                # print(separate[0])
+                # print(separate[1])
+                # print(separate[2])
+                intake[0, index] = int(separate[0])  # / int(Calibration.get())
+                rawPoints[0, index] = intake[0, index] * (3.2 / 18)
+                intake[1, index] = int(separate[1])  # / int(Calibration.get())
+                rawPoints[1, index] = radious * math.cos(math.radians(intake[1, index] * (360 / 4096)))
+                intake[2, index] = int(separate[2])  # / int(Calibration.get())
+                rawPoints[2, index] = intake[2, index] * (3.2 / 18)
 
         if "BEGIN" in decoded:
             index = -1
@@ -348,8 +360,8 @@ def getUSBpokaz():
         # check this
     ser.flushInput()
     # ser.close()
-    #print(rawPoints)
-    #zeroing = rawPoints
+    # print(rawPoints)
+    # zeroing = rawPoints
 
     points = np.subtract(rawPoints, zeroing)
     for i in range(5):
@@ -360,22 +372,27 @@ def getUSBpokaz():
     print(points)
     print("zeroing array:")
     print(zeroing)
-    #print(points[0])
-   # print(points[2])
-    #previewPlot()
+    # print(points[0])
+    # print(points[2])
+    # previewPlot()
     print("xz:")
-    xzprojection = plotPoints2d(points[0], points[2], root)
+    xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png')
     xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2)
     print("yz:")
-    yzprojection = plotPoints2d(points[1], points[2], root)
+    yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png')
     yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
     now = datetime.now()
+
 
 def portSelect(choice):
     port = choice
 
+
 def printOut():
     statusBar["text"] = "Printing..."
+    pdf = PDF()
+    pdf.add_page()
+    pdf.output('pomiar.pdf', 'F')
 
 
 def testPoints():
@@ -387,10 +404,10 @@ def testPoints():
     points[1, 4] = 30
     points[2, 4] = 30
     print(points)
-    #previewPlot()
-    xzprojection = plotPoints2d(points[0], points[2], root)
+    # previewPlot()
+    xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png')
     xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS")
-    yzprojection = plotPoints2d(points[1], points[2], root)
+    yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png')
     yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS")
     statusBar["text"] = "wygenerowano punkty testowe"
 
@@ -419,11 +436,10 @@ menubar.add_cascade(label="Port", menu=setPort)
 #setPort.grid(row=0, column = 7)
 """
 
-
 # MAINLOOP
 
 if connected == 0:
-    #testPoints()
+    # testPoints()
     portChoice = ttk.Combobox(root, value=p.comports())
     portChoice.grid(row=0, column=5)
     connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
@@ -472,8 +488,8 @@ NazwiskoField.grid(row=1, column=1)
 
 DataUrodzeniaLabel = ttk.Label(personalInfoFrame, text="Data Urodzenia:")
 DataUrodzeniaLabel.grid(row=2, column=0, sticky="NE")
-#DataUrodzeniaField = ttk.Entry(personalInfoFrame, width=40)
-#DataUrodzeniaField.grid(row=2, column=1)
+# DataUrodzeniaField = ttk.Entry(personalInfoFrame, width=40)
+# DataUrodzeniaField.grid(row=2, column=1)
 DataUrodzeniaSelector = DateEntry(personalInfoFrame, selectmode='day', year=2000, month=1, day=1)
 DataUrodzeniaSelector.grid(row=2, column=1, sticky="W")
 
@@ -488,9 +504,8 @@ DataPomiaruField.grid(row=4, column=1)
 DataPomiaruField.insert(0, now.strftime("%d/%m/%Y %H:%M:%S"))
 NotesLabel = ttk.Label(personalInfoFrame, text="Opis:")
 NotesLabel.grid(row=5, column=0)
-NotesField = tk.Text(personalInfoFrame,width=30)
+NotesField = tk.Text(personalInfoFrame, width=30)
 NotesField.grid(row=5, column=1)
-
 
 # Zeroing
 zeroButton = ttk.Button(root, text="Zeruj", command=zeroPoints)
