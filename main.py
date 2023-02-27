@@ -82,7 +82,9 @@ root.rowconfigure(1, weight=1)
 style = ttk.Style(root)
 style.theme_use("yaru")
 
-
+style.configure('TFrame', background='white')
+root.configure(background='white')
+style.configure('TLabel', background='white')
 def zeroPoints():
     global zeroing
     # zeroing[0][0] = 0
@@ -388,7 +390,7 @@ def portSelect(choice):
     port = choice
 
 
-def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
+def printOut(imie, nazwisko):#, dataUrodzenia, pesel, dataPomiaru, opis):
     statusBar["text"] = "Printing..."
     pdf = PDF()
     pdf.add_page()
@@ -396,10 +398,10 @@ def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     pdf.image("yzprojection.png",h=125)
     pdf.text(imie, y=10)
     pdf.text(nazwisko, y=20)
-    pdf.text(dataUrodzenia, y=30)
-    pdf.text(pesel, y=40)
-    pdf.text(dataPomiaru, y =50)
-    pdf.text(opis, y=60)
+  #  pdf.text(dataUrodzenia, y=30)
+   # pdf.text(pesel, y=40)
+   # pdf.text(dataPomiaru, y =50)
+  #  pdf.text(opis, y=60)
     pdf.output('pomiar.pdf', 'F')
 
 
@@ -414,9 +416,9 @@ def testPoints():
     print(points)
     # previewPlot()
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png')
-    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS")
+    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS", pady=10)
     yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png')
-    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS")
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS", pady=10)
     statusBar["text"] = "wygenerowano punkty testowe"
 
 
@@ -426,7 +428,7 @@ root.config(menu=menubar)
 
 fileMenu = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Plik", menu=fileMenu)
-fileMenu.add_command(label="Drukuj", command=lambda: printOut(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get_date(), PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
+fileMenu.add_command(label="Drukuj", command=lambda: printOut(ImieField.get(), NazwiskoField.get()))# DataUrodzeniaSelector.get_date(), PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
 fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
 
 menubar.add_command(label="Punkty testowe", command=testPoints)
@@ -487,8 +489,8 @@ personalInfoFrame.grid(row=1, column=6)
 
 ImieLabel = ttk.Label(personalInfoFrame, text="Imię:")
 ImieLabel.grid(row=0, column=0, sticky="NE")
-ImieField = ttk.Entry(personalInfoFrame, width=40)
-ImieField.grid(row=0, column=1)
+ImieField = ttk.Entry(personalInfoFrame, width=40,)
+ImieField.grid(row=0, column=1, padx=20)
 NazwiskoLabel = ttk.Label(personalInfoFrame, text="Nazwisko:")
 NazwiskoLabel.grid(row=1, column=0, sticky="NE")
 NazwiskoField = ttk.Entry(personalInfoFrame, width=40)
@@ -499,7 +501,7 @@ DataUrodzeniaLabel.grid(row=2, column=0, sticky="NE")
 # DataUrodzeniaField = ttk.Entry(personalInfoFrame, width=40)
 # DataUrodzeniaField.grid(row=2, column=1)
 DataUrodzeniaSelector = DateEntry(personalInfoFrame, selectmode='day', year=2000, month=1, day=1)
-DataUrodzeniaSelector.grid(row=2, column=1, sticky="W")
+DataUrodzeniaSelector.grid(row=2, column=1, sticky="W", padx=20)
 
 PeselLabel = ttk.Label(personalInfoFrame, text="PESEL:")
 PeselLabel.grid(row=3, column=0)
