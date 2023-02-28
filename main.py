@@ -171,7 +171,7 @@ def writeToDB(imie, nazwisko, concat):
     conn.close()
 
 
-def plotPoints2d(pointsx, pointsy, window, saveAs):
+def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     # calculating distances between points
     distances = euclid2d(pointsx, pointsy)
     print("x")
@@ -190,8 +190,11 @@ def plotPoints2d(pointsx, pointsy, window, saveAs):
     ax.plot(pointsx, pointsy, 'gray')
     ax.scatter(pointsx, pointsy)
 
-    ax.set_xlim([-100, 100])
-    ax.set_ylim([-150, 1200])
+    ax.set_xlim([-600, 600])
+    ax.set_ylim([-200, 1200])
+    ax.set_ylabel('Z', labelpad=-12)
+    ax.set_xlabel(xlabel)
+
 
     # Show distances between points
     for i in range(5):
@@ -378,10 +381,10 @@ def getUSBpokaz():
     # print(points[2])
     # previewPlot()
     print("xz:")
-    xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png')
+    xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
     xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2)
     print("yz:")
-    yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png')
+    yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
     yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
     now = datetime.now()
 
@@ -390,18 +393,26 @@ def portSelect(choice):
     port = choice
 
 
-def printOut(imie, nazwisko):#, dataUrodzenia, pesel, dataPomiaru, opis):
+def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     statusBar["text"] = "Printing..."
     pdf = PDF()
     pdf.add_page()
     pdf.image("xzprojection.png",h=125)
     pdf.image("yzprojection.png",h=125)
-    pdf.text(imie, y=10)
-    pdf.text(nazwisko, y=20)
-  #  pdf.text(dataUrodzenia, y=30)
-   # pdf.text(pesel, y=40)
-   # pdf.text(dataPomiaru, y =50)
-  #  pdf.text(opis, y=60)
+    pdf.set_font("Arial")
+    pdf.text(130, 50, txt=imie)
+    pdf.text(130, 60, txt=nazwisko)
+    pdf.text(130, 70, txt=str(dataUrodzenia))
+    pdf.text(130, 80, txt=pesel)
+    pdf.text(130, 90, txt=dataPomiaru)
+    pdf.set_xy(120, 110)
+    pdf.multi_cell(100, 5, txt=opis)
+
+    # pdf.text(nazwisko, y=20)
+    # pdf.text(dataUrodzenia, y=30)
+    # pdf.text(pesel, y=40)
+    # pdf.text(dataPomiaru, y =50)
+    # pdf.text(opis, y=60)
     pdf.output('pomiar.pdf', 'F')
 
 
@@ -415,9 +426,9 @@ def testPoints():
     points[2, 4] = 30
     print(points)
     # previewPlot()
-    xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png')
+    xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
     xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS", pady=10)
-    yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png')
+    yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
     yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS", pady=10)
     statusBar["text"] = "wygenerowano punkty testowe"
 
@@ -428,7 +439,7 @@ root.config(menu=menubar)
 
 fileMenu = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Plik", menu=fileMenu)
-fileMenu.add_command(label="Drukuj", command=lambda: printOut(ImieField.get(), NazwiskoField.get()))# DataUrodzeniaSelector.get_date(), PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
+fileMenu.add_command(label="Drukuj", command=lambda: printOut(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get_date(), PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
 fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
 
 menubar.add_command(label="Punkty testowe", command=testPoints)
