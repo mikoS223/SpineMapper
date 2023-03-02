@@ -34,6 +34,11 @@ import pstats
 # Printout
 from fpdf import FPDF
 
+import os, sys
+import win32print
+import win32api
+
+
 
 class PDF(FPDF):
     pass
@@ -382,7 +387,7 @@ def getUSBpokaz():
     # previewPlot()
     print("xz:")
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
-    xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2)
+    xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2, )
     print("yz:")
     yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
     yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
@@ -394,8 +399,8 @@ def portSelect(choice):
 
 
 def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
-    statusBar["text"] = "Printing..."
-    pdf = PDF()
+    statusBar["text"] = "Printing to " + str(win32print.GetDefaultPrinter()) + "..."
+    pdf = PDF('L')
     pdf.add_page()
     pdf.image("xzprojection.png",h=125)
     pdf.image("yzprojection.png",h=125)
