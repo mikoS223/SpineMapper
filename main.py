@@ -427,8 +427,10 @@ def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     # pdf.text(dataPomiaru, y =50)
     # pdf.text(opis, y=60)
 
-    pdfDestination = filedialog.askdirectory(title="Select a file")
-    pdf.output(os.path.join(pdfDestination, "pomiar.pdf"), 'F')
+    pdfDestination = filedialog.asksaveasfile(title="Select a file", filetypes=(
+        [("PDF file", "*.pdf")]))
+    print(pdfDestination.name + ".pdf")
+    pdf.output(pdfDestination.name + ".pdf", 'F')
 
     # PRINTING CANCELLED
     # try:
