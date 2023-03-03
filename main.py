@@ -39,7 +39,6 @@ import win32print
 import win32api
 
 
-
 class PDF(FPDF):
     pass
 
@@ -90,6 +89,8 @@ style.theme_use("yaru")
 style.configure('TFrame', background='white')
 root.configure(background='white')
 style.configure('TLabel', background='white')
+
+
 def zeroPoints():
     global zeroing
     # zeroing[0][0] = 0
@@ -199,7 +200,6 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     ax.set_ylim([-200, 1200])
     ax.set_ylabel('Z', labelpad=-12)
     ax.set_xlabel(xlabel)
-
 
     # Show distances between points
     for i in range(5):
@@ -402,8 +402,8 @@ def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     statusBar["text"] = "Printing to " + str(win32print.GetDefaultPrinter()) + "..."
     pdf = PDF('L')
     pdf.add_page()
-    pdf.image("xzprojection.png",h=125)
-    pdf.image("yzprojection.png",h=125)
+    pdf.image("xzprojection.png", h=125)
+    pdf.image("yzprojection.png", h=125)
     pdf.set_font("Arial")
     pdf.text(130, 50, txt=imie)
     pdf.text(130, 60, txt=nazwisko)
@@ -419,7 +419,12 @@ def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     # pdf.text(dataPomiaru, y =50)
     # pdf.text(opis, y=60)
     pdf.output('pomiar.pdf', 'F')
-
+    try:
+        win32api.ShellExecute(0, "print", "pomiar.pdf", None, ".", 0)
+    except:
+        statusBar["text"] = "Błąd w drukowaniu"
+    else:
+        statusBar["text"] = "Poprawne drukowanie"
 
 def testPoints():
     for i in range(5):
@@ -444,7 +449,9 @@ root.config(menu=menubar)
 
 fileMenu = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Plik", menu=fileMenu)
-fileMenu.add_command(label="Drukuj", command=lambda: printOut(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get_date(), PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
+fileMenu.add_command(label="Drukuj",
+                     command=lambda: printOut(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get_date(),
+                                              PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
 fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
 
 menubar.add_command(label="Punkty testowe", command=testPoints)
@@ -505,7 +512,7 @@ personalInfoFrame.grid(row=1, column=6)
 
 ImieLabel = ttk.Label(personalInfoFrame, text="Imię:")
 ImieLabel.grid(row=0, column=0, sticky="NE")
-ImieField = ttk.Entry(personalInfoFrame, width=40,)
+ImieField = ttk.Entry(personalInfoFrame, width=40, )
 ImieField.grid(row=0, column=1, padx=20)
 NazwiskoLabel = ttk.Label(personalInfoFrame, text="Nazwisko:")
 NazwiskoLabel.grid(row=1, column=0, sticky="NE")
