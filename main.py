@@ -187,7 +187,7 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     print(pointsy)
 
     # i don't actually know which axis is which here, check it later
-    figxy = Figure(figsize=(5, 5), dpi=100)
+    figxy = Figure(figsize=(6, 12), dpi=100)
 
     canvas = FigureCanvasTkAgg(figxy, master=window)
     canvas.draw()
@@ -197,9 +197,13 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     ax.plot(pointsx, pointsy, 'gray')
     ax.scatter(pointsx, pointsy)
 
-    ax.set_xlim([-600, 600])
-    ax.set_ylim([-200, 1200])
-    ax.set_ylabel('Z', labelpad=-12)
+    if (xlabel is 'X'):
+        ax.set_xlim([0, 250])
+    else:
+        ax.set_xlim([-60, 60])
+
+    ax.set_ylim([0, 1200])
+    ax.set_ylabel('Z', labelpad=-5)
     ax.set_xlabel(xlabel)
 
     # Show distances between points
@@ -218,6 +222,7 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
         figxy.text(pointsx[i], pointsy[i], angle[i], horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
 
+    figxy.tight_layout()
     figxy.savefig(saveAs)
     return canvas.get_tk_widget()
     # canvas.get_tk_widget().grid(row=row, column=column)
@@ -403,14 +408,16 @@ def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     statusBar["text"] = "Zapisywanie pliku pdf..." # + str(win32print.GetDefaultPrinter()) + "..."
     pdf = PDF('L')
     pdf.add_page()
+    pdf.set_xy(0,0)
     pdf.image("xzprojection.png", h=125)
+    pdf.set_xy(120,0)
     pdf.image("yzprojection.png", h=125)
     pdf.set_font("Arial")
-    pdf.text(130, 50, txt=imie)
-    pdf.text(130, 60, txt=nazwisko)
-    pdf.text(130, 70, txt=str(dataUrodzenia))
-    pdf.text(130, 80, txt=pesel)
-    pdf.text(130, 90, txt=dataPomiaru)
+    pdf.text(120, 50, txt=imie)
+    pdf.text(120, 60, txt=nazwisko)
+    pdf.text(120, 70, txt=str(dataUrodzenia))
+    pdf.text(120, 80, txt=pesel)
+    pdf.text(120, 90, txt=dataPomiaru)
     pdf.set_xy(120, 110)
     pdf.multi_cell(100, 5, txt=opis)
 
