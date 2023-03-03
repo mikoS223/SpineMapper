@@ -398,8 +398,8 @@ def portSelect(choice):
     port = choice
 
 
-def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
-    statusBar["text"] = "Printing to " + str(win32print.GetDefaultPrinter()) + "..."
+def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
+    statusBar["text"] = "Zapisywanie pliku pdf..." # + str(win32print.GetDefaultPrinter()) + "..."
     pdf = PDF('L')
     pdf.add_page()
     pdf.image("xzprojection.png", h=125)
@@ -419,12 +419,16 @@ def printOut(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     # pdf.text(dataPomiaru, y =50)
     # pdf.text(opis, y=60)
     pdf.output('pomiar.pdf', 'F')
-    try:
-        win32api.ShellExecute(0, "print", "pomiar.pdf", None, ".", 0)
-    except:
-        statusBar["text"] = "Błąd w drukowaniu"
-    else:
-        statusBar["text"] = "Poprawne drukowanie"
+
+    # PRINTING CANCELLED
+    # try:
+
+    # win32api.ShellExecute(0, "print", os.path.abspath("pomiar.jpg"), None, ".", 0)
+    # except:
+    #     statusBar["text"] = "Błąd w drukowaniu"
+    # else:
+    #     statusBar["text"] = "Poprawne drukowanie"
+
 
 def testPoints():
     for i in range(5):
@@ -449,9 +453,9 @@ root.config(menu=menubar)
 
 fileMenu = tk.Menu(menubar, tearoff=0)
 menubar.add_cascade(label="Plik", menu=fileMenu)
-fileMenu.add_command(label="Drukuj",
-                     command=lambda: printOut(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get_date(),
-                                              PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
+fileMenu.add_command(label="Zapisz jako pdf",
+                     command=lambda: saveAsPdf(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get_date(),
+                                               PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
 fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
 
 menubar.add_command(label="Punkty testowe", command=testPoints)
