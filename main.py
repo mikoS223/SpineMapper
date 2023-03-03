@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter.messagebox import askyesno
 from tkinter import ttk
 from tkcalendar import DateEntry
+from tkinter import filedialog
 
 import numpy
 from ttkthemes import ThemedTk
@@ -418,7 +419,9 @@ def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     # pdf.text(pesel, y=40)
     # pdf.text(dataPomiaru, y =50)
     # pdf.text(opis, y=60)
-    pdf.output('pomiar.pdf', 'F')
+
+    pdfDestination = filedialog.askdirectory(title="Select a file")
+    pdf.output(os.path.join(pdfDestination, "pomiar.pdf"), 'F')
 
     # PRINTING CANCELLED
     # try:
