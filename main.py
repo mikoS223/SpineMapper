@@ -35,6 +35,7 @@ import pstats
 # Printout
 from fpdf import FPDF
 
+
 import os, sys
 import win32print
 import win32api
@@ -407,19 +408,20 @@ def portSelect(choice):
 def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     statusBar["text"] = "Zapisywanie pliku pdf..." # + str(win32print.GetDefaultPrinter()) + "..."
     pdf = PDF('L')
+    pdf.add_font("ArialUni", style="", fname="fonts\ArialUnicodeMS.ttf", uni=True)
     pdf.add_page()
     pdf.set_xy(25, 10)
     pdf.image("xzprojection.png", h=175)
     pdf.set_xy(120, 10)
     pdf.image("yzprojection.png", h=175)
-    pdf.set_font("Arial")
-    pdf.text(240, 50, txt=imie)
-    pdf.text(240, 60, txt=nazwisko)
-    pdf.text(240, 70, txt=str(dataUrodzenia))
-    pdf.text(240, 80, txt=pesel)
-    pdf.text(240, 90, txt=dataPomiaru)
-    pdf.set_xy(240, 110)
-    pdf.multi_cell(100, 5, txt=opis)
+    pdf.set_font("ArialUni")
+    pdf.text(220, 50, txt=imie)
+    pdf.text(220, 60, txt=nazwisko)
+    pdf.text(220, 70, txt=str(dataUrodzenia))
+    pdf.text(220, 80, txt=pesel)
+    pdf.text(220, 90, txt=dataPomiaru)
+    pdf.set_xy(220, 110)
+    pdf.multi_cell(75, 5, txt=opis)
 
     # pdf.text(nazwisko, y=20)
     # pdf.text(dataUrodzenia, y=30)
@@ -551,7 +553,7 @@ DataPomiaruField.grid(row=4, column=1)
 DataPomiaruField.insert(0, now.strftime("%d/%m/%Y %H:%M:%S"))
 NotesLabel = ttk.Label(personalInfoFrame, text="Opis:")
 NotesLabel.grid(row=5, column=0)
-NotesField = tk.Text(personalInfoFrame, width=30)
+NotesField = tk.Text(personalInfoFrame, width=30, wrap=tk.WORD)
 NotesField.grid(row=5, column=1)
 
 # Zeroing
