@@ -429,10 +429,10 @@ def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     # pdf.text(dataPomiaru, y =50)
     # pdf.text(opis, y=60)
 
-    pdfDestination = filedialog.asksaveasfile(title="Select a file", filetypes=(
+    pdfDestination = filedialog.asksaveasfilename(title="Select a file", filetypes=(
         [("PDF file", "*.pdf")]))
-    print(pdfDestination.name + ".pdf")
-    pdf.output(pdfDestination.name + ".pdf", 'F')
+    print(pdfDestination + ".pdf")
+    pdf.output(pdfDestination + ".pdf", 'F')
 
     # PRINTING CANCELLED
     # try:
