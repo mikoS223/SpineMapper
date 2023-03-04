@@ -443,13 +443,11 @@ def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
 
 
 def testPoints():
-    for i in range(5):
-        points[0, i] = i * 10
-        points[1, i] = (i + 2) * 10
-        points[2, i] = (i + 4) * 10
-    points[0, 4] = 30
-    points[1, 4] = 30
-    points[2, 4] = 30
+    for i in range(6):
+        points[0, i] = 20 + i * 10
+        points[1, i] = (i + 2) * 5
+        points[2, i] = (i + 4) * 100
+
     print(points)
     # previewPlot()
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
