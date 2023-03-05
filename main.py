@@ -204,7 +204,7 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
         ax.set_xlim([-60, 60])
 
     ax.set_ylim([0, 1200])
-    ax.set_ylabel('Z', labelpad=-5)
+    ax.set_ylabel('Z', labelpad=-7)
     ax.set_xlabel(xlabel)
 
     # Show distances between points
