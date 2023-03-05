@@ -394,11 +394,16 @@ def getUSBpokaz():
     # previewPlot()
     print("xz:")
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
-    xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2)
+    xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2, pady=20)
     print("yz:")
     yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
-    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, pady=20)
+
+    # display datetime of measurement
     now = datetime.now()
+    DataPomiaruField.delete(0,tk.END)
+    DataPomiaruField.insert(0, now.strftime("%d/%m/%Y %H:%M:%S"))
+
 
 
 def portSelect(choice):
@@ -453,10 +458,15 @@ def testPoints():
     print(points)
     # previewPlot()
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
-    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS", pady=10)
+    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS", pady=30)
     yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
-    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS", pady=10)
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS", pady=30)
     statusBar["text"] = "wygenerowano punkty testowe"
+
+    # display datetime of measurement
+    now = datetime.now()
+    DataPomiaruField.delete(0,tk.END)
+    DataPomiaruField.insert(0, now.strftime("%d/%m/%Y %H:%M:%S"))
 
 
 # toolbar attempt, didn't work
