@@ -406,7 +406,14 @@ def portSelect(choice):
 
 
 def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
+    # root.configure(cursor="wait")
+    # root.update()
     statusBar["text"] = "Zapisywanie pliku pdf..." # + str(win32print.GetDefaultPrinter()) + "..."
+
+    pdfDestination = filedialog.asksaveasfilename(title="Select a file", filetypes=(
+        [("PDF file", "*.pdf")]))
+    print(pdfDestination + ".pdf")
+
     pdf = PDF('L')
     pdf.add_font("ArialUni", style="", fname="fonts\ArialUnicodeMS.ttf", uni=True)
     pdf.add_page()
@@ -423,17 +430,10 @@ def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     pdf.set_xy(220, 110)
     pdf.multi_cell(75, 5, txt=opis)
 
-    # pdf.text(nazwisko, y=20)
-    # pdf.text(dataUrodzenia, y=30)
-    # pdf.text(pesel, y=40)
-    # pdf.text(dataPomiaru, y =50)
-    # pdf.text(opis, y=60)
 
-    pdfDestination = filedialog.asksaveasfilename(title="Select a file", filetypes=(
-        [("PDF file", "*.pdf")]))
-    print(pdfDestination + ".pdf")
     pdf.output(pdfDestination + ".pdf", 'F')
 
+    # root.configure(cursor="")
     # PRINTING CANCELLED
     # try:
 
