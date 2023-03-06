@@ -188,7 +188,7 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     print(pointsy)
 
     # i don't actually know which axis is which here, check it later
-    figxy = Figure(figsize=(6, 12), dpi=100)
+    figxy = Figure(figsize=(6, 12), dpi=100, layout="constrained")
 
     canvas = FigureCanvasTkAgg(figxy, master=window)
     canvas.draw()
@@ -205,7 +205,8 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
 
     ax.set_ylim([0, 1200])
     ax.set_ylabel('Z', labelpad=-7)
-    ax.set_xlabel(xlabel)
+    # ax.set_xlabel(xlabel)
+    ax.set_title(xlabel)
 
     # Show distances between points
     for i in range(5):
@@ -223,7 +224,7 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
         figxy.text(pointsx[i], pointsy[i], angle[i], horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
 
-    figxy.tight_layout()
+    # figxy.constrained_layout()
     figxy.savefig(saveAs)
     return canvas.get_tk_widget()
     # canvas.get_tk_widget().grid(row=row, column=column)
@@ -394,10 +395,10 @@ def getUSBpokaz():
     # previewPlot()
     print("xz:")
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
-    xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2, pady=20)
+    xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2)
     print("yz:")
     yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
-    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, pady=20)
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
 
     # display datetime of measurement
     now = datetime.now()
@@ -458,14 +459,14 @@ def testPoints():
     print(points)
     # previewPlot()
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
-    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS", pady=30)
+    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS", pady=20)
     yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
-    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS", pady=30)
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS", pady=20)
     statusBar["text"] = "wygenerowano punkty testowe"
 
     # display datetime of measurement
     now = datetime.now()
-    DataPomiaruField.delete(0,tk.END)
+    DataPomiaruField.delete(0, tk.END)
     DataPomiaruField.insert(0, now.strftime("%d/%m/%Y %H:%M:%S"))
 
 
