@@ -483,6 +483,8 @@ fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), 
 
 menubar.add_command(label="Punkty testowe", command=testPoints)
 
+menubar.add_command(label="Connect", command=lambda: connect(portChoice.get()))
+
 """ propably best to do it with more stuff connected
 setPort = Listbox(menubar)
 ports = p.comports()
@@ -502,8 +504,8 @@ if connected == 0:
     # testPoints()
     portChoice = ttk.Combobox(root, value=p.comports())
     portChoice.grid(row=0, column=5)
-    connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
-    connectButton.grid(row=0, column=6)
+    # connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
+    # connectButton.grid(row=0, column=6)
 
 getPointsButton = ttk.Button(root, text="pobierz koordynaty", command=getUSBpokaz)
 getPointsButton.grid(row=0, column=2)
@@ -535,7 +537,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS patients (
 
 # record data
 personalInfoFrame = ttk.Frame(root)
-personalInfoFrame.grid(row=1, column=6)
+personalInfoFrame.grid(row=1, column=0)
 
 ImieLabel = ttk.Label(personalInfoFrame, text="Imię:")
 ImieLabel.grid(row=0, column=0, sticky="NE")
