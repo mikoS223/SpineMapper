@@ -35,51 +35,48 @@ import pstats
 # Printout
 from fpdf import FPDF
 
-
-import os, sys
-import win32print
-import win32api
-
-
 class PDF(FPDF):
     pass
 
-
-# get date time CHANGE LATER
-now = datetime.now()
-
+# performance
 profiler = cProfile.Profile()
 profiler.enable()
 
-# ser = 0
 connected = 0
+
 # zeroing array
 zeroing = np.zeros([3, 6])
 
+# tip arm radious (future functionality)
 radious = 65
 
-#
+# points before zeroing
 rawPoints = np.zeros([3, 6])
 
+# 1:1 values from USB
 intake = np.zeros([3, 6])
 
 # measurement array
 points = np.zeros([3, 6])
 distances = np.zeros([5])
 
+# GRAPH COLORS FOR DISPLAYING SAVED MEASUREMENTS
 # getting default color progression from matplotlib
-colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+# colors = plt.rcParams["axes.prop_cycle"].by_key()["color"]
+
 
 # separate[0]-> x separate[1]-> y separate[2]-> z,
 # this variable is used for parsing coordinates from USB packets
 separate = []
 
-# tkinter window init shit
+# tkinter window init
 root = ThemedTk()
 root.wm_title("Spine Mapper")
 
+# full screen
 root.state('zoomed')
 
+# scaling with screen resolution (just both plots)
 root.columnconfigure(2, weight=1)
 root.columnconfigure(4, weight=1)
 root.rowconfigure(1, weight=1)
@@ -92,7 +89,7 @@ style.configure('TFrame', background='white')
 root.configure(background='white')
 style.configure('TLabel', background='white')
 
-
+# basically just takes a snapshot of current points and adds some offsets
 def zeroPoints():
     global zeroing
     # zeroing[0][0] = 0
@@ -100,6 +97,8 @@ def zeroPoints():
         zeroing[0][i] = rawPoints[0][i]
         zeroing[2][i] = rawPoints[2][i]
     # print("ZEROED")
+
+    # offsets !THIS IS MACHINE-SPECIFIC AND NEEDS TO BE SOLVED!
     zeroing[2][1] -= 67.7 - 6
     zeroing[2][2] -= 121.62
     zeroing[2][3] -= 182.2
@@ -109,6 +108,7 @@ def zeroPoints():
     statusBar["text"] = "wyzerowano"
 
 
+# delete functionality for a future data base, i'm leaving it here for possible future use
 def deleteMeasurement(imieNazwisko, date):  # DELETES WRONG MEASUREMENT
     if askyesno(title='Potwierdzenie', message='Usunąć dane pacenta?'):
         imieNazwiskoSplit = imieNazwisko.split(" ")
@@ -124,6 +124,7 @@ def deleteMeasurement(imieNazwisko, date):  # DELETES WRONG MEASUREMENT
         conn.commit()
 
 
+# delete a whole personal record, also for possible future use
 def deleteRecord(imieNazwisko):
     if askyesno(title='Potwierdzenie', message='Usunąć wszystkie dane pacenta?'):
         imieNazwiskoSplit = imieNazwisko.split(" ")
@@ -142,7 +143,7 @@ def euclid3d(currentPoints):
 
     return distances
 
-
+# calculate a 2d euclidean distance between 2 points
 def euclid2d(xaxis, yaxis):
     distances = np.zeros([5])
     for i in range(5):
@@ -150,14 +151,14 @@ def euclid2d(xaxis, yaxis):
 
     return distances
 
-
+# this was used for testing and saving to database
 def concatenation():
     concat = ""
     for i in range(6):
         concat += str(points[0, i]) + "," + str(points[1, i]) + "," + str(points[2, i]) + ";"
     return concat
 
-
+# save to database, unused for now, left here for possible future reference
 def writeToDB(imie, nazwisko, concat):
     conn = sqlite3.connect('patients.db')
     c = conn.cursor()
@@ -178,7 +179,7 @@ def writeToDB(imie, nazwisko, concat):
     conn.commit()
     conn.close()
 
-
+# the actual function that draws the two plots visible when calling testpoints or taking a measurement
 def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     # calculating distances between points
     distances = euclid2d(pointsx, pointsy)
@@ -187,7 +188,7 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     print("y")
     print(pointsy)
 
-    # i don't actually know which axis is which here, check it later
+    # plot size can be controlled form here, the "layot=constrained" here is because it was getting clipped without it
     figxy = Figure(figsize=(6, 12), dpi=100, layout="constrained")
 
     canvas = FigureCanvasTkAgg(figxy, master=window)
@@ -198,14 +199,15 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     ax.plot(pointsx, pointsy, 'gray')
     ax.scatter(pointsx, pointsy)
 
+    # set ranges on the x axis of both plots
     if (xlabel is 'X'):
         ax.set_xlim([0, 250])
     else:
         ax.set_xlim([-60, 60])
 
+    # y axis range for both plots
     ax.set_ylim([0, 1200])
     ax.set_ylabel('Z', labelpad=-7)
-    # ax.set_xlabel(xlabel)
     ax.set_title(xlabel)
 
     # Show distances between points
@@ -218,18 +220,19 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     slope = np.zeros([5])
     angle = np.zeros([5])
 
+    # display degrees on plots
     for i in range(5):
         slope[i] = ((pointsy[i + 1] - pointsy[i]) / (pointsx[i + 1] - pointsx[i]))
         angle[i] = round(math.degrees(math.atan(slope[i])), 2)
         figxy.text(pointsx[i], pointsy[i], angle[i], horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
 
-    # figxy.constrained_layout()
     figxy.savefig(saveAs)
     return canvas.get_tk_widget()
-    # canvas.get_tk_widget().grid(row=row, column=column)
 
 
+# another database functionality that i'm leaving here for future reference
+# this was actualy another window that would open and compare all of a patients measurements
 def readFromDB(imieNazwisko):
     imieNazwiskoSplit = imieNazwisko.split(" ")
 
@@ -381,6 +384,7 @@ def getUSBpokaz():
     # print(rawPoints)
     # zeroing = rawPoints
 
+    # subtracts zeroing matrix form points pulled from usb
     points = np.subtract(rawPoints, zeroing)
     for i in range(5):
         points[2][i] = points[2][i] + (radious * math.sin(math.radians(intake[1, i] * (360 / 4096))))
@@ -394,6 +398,8 @@ def getUSBpokaz():
     # print(points[2])
     # previewPlot()
     print("xz:")
+
+    # display the plots
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
     xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2)
     print("yz:")
@@ -410,7 +416,7 @@ def getUSBpokaz():
 def portSelect(choice):
     port = choice
 
-
+# save both figures and personal info to a pdf file
 def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     # root.configure(cursor="wait")
     # root.update()
@@ -449,7 +455,7 @@ def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     # else:
     #     statusBar["text"] = "Poprawne drukowanie"
 
-
+# generate some test values and draw graphs from that
 def testPoints():
     for i in range(6):
         points[0, i] = 20 + i * 10
@@ -470,7 +476,7 @@ def testPoints():
     DataPomiaruField.insert(0, now.strftime("%d/%m/%Y %H:%M:%S"))
 
 
-# toolbar attempt, didn't work
+# MENU BAR
 menubar = tk.Menu(root)
 root.config(menu=menubar)
 
@@ -499,26 +505,22 @@ menubar.add_cascade(label="Port", menu=setPort)
 """
 
 # MAINLOOP
-
 if connected == 0:
-    # testPoints()
     portChoice = ttk.Combobox(root, value=p.comports())
     portChoice.grid(row=0, column=5)
-    # connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
-    # connectButton.grid(row=0, column=6)
 
 getPointsButton = ttk.Button(root, text="pobierz koordynaty", command=getUSBpokaz)
 getPointsButton.grid(row=0, column=2)
 
-# serch for patient
-conn = sqlite3.connect('patients.db')
-c = conn.cursor()
-c.execute("""CREATE TABLE IF NOT EXISTS patients (
-       imie text,
-       nazwisko text,
-       points text,
-       czas text
-   )""")
+# connect to database
+# conn = sqlite3.connect('patients.db')
+# c = conn.cursor()
+# c.execute("""CREATE TABLE IF NOT EXISTS patients (
+#        imie text,
+#        nazwisko text,
+#        points text,
+#        czas text
+#    )""")
 #
 # conn = sqlite3.connect('patients.db')
 # c = conn.cursor()
@@ -535,7 +537,7 @@ c.execute("""CREATE TABLE IF NOT EXISTS patients (
 # SearchButton = ttk.Button(root, text="Szukaj", command=lambda: readFromDB(SearchField.get()))
 # SearchButton.grid(row=1, column=1, sticky=N)
 
-# record data
+# PERSONAL INFO
 personalInfoFrame = ttk.Frame(root)
 personalInfoFrame.grid(row=1, column=0)
 
@@ -550,8 +552,6 @@ NazwiskoField.grid(row=1, column=1)
 
 DataUrodzeniaLabel = ttk.Label(personalInfoFrame, text="Data Urodzenia:")
 DataUrodzeniaLabel.grid(row=2, column=0, sticky="NE")
-# DataUrodzeniaField = ttk.Entry(personalInfoFrame, width=40)
-# DataUrodzeniaField.grid(row=2, column=1)
 DataUrodzeniaSelector = DateEntry(personalInfoFrame, selectmode='day', year=2000, month=1, day=1)
 DataUrodzeniaSelector.grid(row=2, column=1, sticky="W", padx=20)
 
