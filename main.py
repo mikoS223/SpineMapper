@@ -38,6 +38,9 @@ from fpdf import FPDF
 class PDF(FPDF):
     pass
 
+now = datetime.now()
+
+
 # performance
 profiler = cProfile.Profile()
 profiler.enable()
@@ -342,6 +345,11 @@ def connect(portg):
     if (connected == 1):
         statusBar["text"] = "Connected to " + portg[0:4]
 
+def clearPersonalInfo():
+    ImieField.delete(0, tk.END)
+    NazwiskoField.delete(0, tk.END)
+    PeselField.delete(0, tk.END)
+    NotesField.delete(1.0, tk.END)
 
 # Get points over usb
 def getUSBpokaz():
@@ -568,6 +576,9 @@ NotesLabel = ttk.Label(personalInfoFrame, text="Opis:")
 NotesLabel.grid(row=5, column=0)
 NotesField = tk.Text(personalInfoFrame, width=30, wrap=tk.WORD)
 NotesField.grid(row=5, column=1)
+
+ClearPersonalInfoButton = ttk.Button(personalInfoFrame, text="Wyczyść", command=clearPersonalInfo)
+ClearPersonalInfoButton.grid(row=6, column=0, columnspan=2)
 
 # Zeroing
 zeroButton = ttk.Button(root, text="Zeruj", command=zeroPoints)
