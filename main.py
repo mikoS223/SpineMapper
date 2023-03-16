@@ -216,7 +216,20 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     # Show distances between points
     for i in range(5):
         xmidpoint = pointsx[i] + ((pointsx[i + 1] - pointsx[i]) / 2)
+        if xlabel is 'X':
+            if xmidpoint > 125:
+               xmidpoint -= 15
+            else:
+                xmidpoint += 15
+
+        else:
+            if xmidpoint > 0:
+                xmidpoint -= 15
+            else:
+                xmidpoint += 15
+
         ymidpoint = pointsy[i] + ((pointsy[i + 1] - pointsy[i]) / 2)
+
         figxy.text(xmidpoint, ymidpoint, distances[i], horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
 
@@ -466,8 +479,8 @@ def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
 # generate some test values and draw graphs from that
 def testPoints():
     for i in range(6):
-        points[0, i] = 20 + i * 10
-        points[1, i] = (i + 2) * 5
+        points[0, i] = 100 + i * 10
+        points[1, i] = (i - 2) * 5
         points[2, i] = (i + 4) * 100
 
     print(points)
