@@ -224,9 +224,9 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
 
         else:
             if xmidpoint > 0:
-                xmidpoint -= 15
+                xmidpoint -= 10
             else:
-                xmidpoint += 15
+                xmidpoint += 10
 
         ymidpoint = pointsy[i] + ((pointsy[i + 1] - pointsy[i]) / 2)
 
