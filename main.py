@@ -365,16 +365,16 @@ def clearPersonalInfo():
     NotesField.delete(1.0, tk.END)
 
 # Get points over usb
+# this works, but has to be cleaned up
 def getUSBpokaz():
     index = -1
+    ser.write(b'a')
 
-    # CHECK THIS FOR OVERHEAD
-    # this has to get more than one line, because readline stops at \n, but starts wherever, so before it was
-    # getting a random amount of bytes from the back of a packet
-    data = ser.readlines(250)
+
+    data = ser.readlines(145)
 
     # print(data)
-    for i in range(12):
+    for i in range(7):
 
         decoded = data[i].decode('utf8')
 
@@ -382,19 +382,23 @@ def getUSBpokaz():
             index += 1
             separate = decoded.split(";")
             # print(separate)
-            if separate[0] != '' and separate[1][0] != '':
+            try:
                 separate[0] = str(separate[0]).replace('.', '')
                 separate[1] = str(separate[1]).replace('.', '')
                 separate[2] = str(separate[2]).replace('.', '')
+            except ValueError:
+                print("Something tried to insert a wrong value into separate")
+            except IndexError:
+                print("index out of range")
                 # print(separate[0])
                 # print(separate[1])
                 # print(separate[2])
-                intake[0, index] = int(separate[0])  # / int(Calibration.get())
-                rawPoints[0, index] = intake[0, index] * (3.2 / 18)
-                intake[1, index] = int(separate[1])  # / int(Calibration.get())
-                rawPoints[1, index] = radious * math.cos(math.radians(intake[1, index] * (360 / 4096)))
-                intake[2, index] = int(separate[2])  # / int(Calibration.get())
-                rawPoints[2, index] = intake[2, index] * (3.2 / 18)
+            intake[0, index] = int(separate[0])  # / int(Calibration.get())
+            rawPoints[0, index] = intake[0, index] * (3.2 / 18)
+            intake[1, index] = int(separate[1])  # / int(Calibration.get())
+            rawPoints[1, index] = radious * math.cos(math.radians(intake[1, index] * (360 / 4096)))
+            intake[2, index] = int(separate[2])  # / int(Calibration.get())
+            rawPoints[2, index] = intake[2, index] * (3.2 / 18)
 
         if "BEGIN" in decoded:
             index = -1
@@ -512,18 +516,17 @@ menubar.add_command(label="Punkty testowe", command=testPoints)
 
 menubar.add_command(label="Connect", command=lambda: connect(portChoice.get()))
 
-""" propably best to do it with more stuff connected
-setPort = Listbox(menubar)
+setPort = tk.Listbox(menubar)
 ports = p.comports()
 #portList = []
 for i in ports:
-    setPort.insert(END, i)
+    setPort.insert(tk.END, i)
 print(setPort)
 #settings.
 menubar.add_cascade(label="Port", menu=setPort)
 
 #setPort.grid(row=0, column = 7)
-"""
+
 
 # MAINLOOP
 if connected == 0:
