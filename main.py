@@ -203,10 +203,10 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     ax.scatter(pointsx, pointsy)
 
     # set ranges on the x axis of both plots
-    if (xlabel is 'X'):
+    if xlabel == 'X':
         ax.set_xlim([0, 250])
     else:
-        ax.set_xlim([-60, 60])
+        ax.set_xlim([-70, 70])
 
     # y axis range for both plots
     ax.set_ylim([0, 1200])
@@ -216,7 +216,7 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     # Show distances between points
     for i in range(5):
         xmidpoint = pointsx[i] + ((pointsx[i + 1] - pointsx[i]) / 2)
-        if xlabel is 'X':
+        if xlabel == 'X':
             if xmidpoint > 125:
                xmidpoint -= 15
             else:
