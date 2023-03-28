@@ -35,6 +35,10 @@ import pstats
 # Printout
 from fpdf import FPDF
 
+# serialization
+
+import pickle
+
 class PDF(FPDF):
     pass
 
@@ -58,6 +62,14 @@ rawPoints = np.zeros([3, 6])
 
 # 1:1 values from USB
 intake = np.zeros([3, 6])
+
+# rotary encoder callibration values
+try:
+    with open('rotaryCallibrationData.pickle', 'rb') as f:
+        zeroAngle = pickle.load(f)
+except FileNotFoundError:
+    zeroAngle = np.zeros([6])
+print(zeroAngle)
 
 # measurement array
 points = np.zeros([3, 6])
@@ -102,11 +114,21 @@ def zeroPoints():
     # print("ZEROED")
 
     # offsets !THIS IS MACHINE-SPECIFIC AND NEEDS TO BE SOLVED!
+    # offsets for z
     zeroing[2][1] -= 67.7 - 6
     zeroing[2][2] -= 121.62
     zeroing[2][3] -= 182.2
     zeroing[2][4] -= 242.5
     zeroing[2][5] -= 303.32
+
+    # offsets for x
+    zeroing[0][0] -= 10.6
+    zeroing[0][1] -= 10.4
+    zeroing[0][2] -= 1.9
+    zeroing[0][3] -= 3.4
+    zeroing[0][4] -= 0
+    zeroing[0][5] -= 2.8
+
     print(zeroing)
     statusBar["text"] = "wyzerowano"
 
@@ -209,7 +231,7 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
         ax.set_xlim([-70, 70])
 
     # y axis range for both plots
-    ax.set_ylim([0, 1200])
+    ax.set_ylim([-80, 1200])
     ax.set_ylabel('Z', labelpad=-7)
     ax.set_title(xlabel)
 
@@ -364,6 +386,48 @@ def clearPersonalInfo():
     PeselField.delete(0, tk.END)
     NotesField.delete(1.0, tk.END)
 
+def rotaryCalibration():
+    index = -1
+    ser.write(b'a')
+
+    data = ser.readlines(145)
+
+    # print(data)
+    for i in range(7):
+
+        decoded = data[i].decode('utf8')
+
+        if ";" in decoded:
+            index += 1
+            separate = decoded.split(";")
+            # print(separate)
+            try:
+                separate[0] = str(separate[0]).replace('.', '')
+                separate[1] = str(separate[1]).replace('.', '')
+                separate[2] = str(separate[2]).replace('.', '')
+            except ValueError:
+                print("Something tried to insert a wrong value into separate")
+            except IndexError:
+                print("index out of range")
+                # print(separate[0])
+                # print(separate[1])
+                # print(separate[2])
+
+
+            intake[1, index] = int(separate[1])  # / int(Calibration.get())
+            zeroAngle[index] = 1024 + intake[1, index]
+
+
+        if "BEGIN" in decoded:
+            index = -1
+
+        # check this
+    ser.flushInput()
+
+    with open('rotaryCallibrationData.pickle', 'wb') as f:
+        pickle.dump(zeroAngle, f)
+
+
 # Get points over usb
 # this works, but has to be cleaned up
 def getUSBpokaz():
@@ -393,10 +457,17 @@ def getUSBpokaz():
                 # print(separate[0])
                 # print(separate[1])
                 # print(separate[2])
+
+
             intake[0, index] = int(separate[0])  # / int(Calibration.get())
             rawPoints[0, index] = intake[0, index] * (3.2 / 18)
             intake[1, index] = int(separate[1])  # / int(Calibration.get())
+            intake[1,index] = intake[1, index] - zeroAngle[index]
+            if intake[1, index] < 0:
+                intake[1, index] = intake[1,index] + 4096
+
             rawPoints[1, index] = radious * math.cos(math.radians(intake[1, index] * (360 / 4096)))
+
             intake[2, index] = int(separate[2])  # / int(Calibration.get())
             rawPoints[2, index] = intake[2, index] * (3.2 / 18)
 
@@ -411,7 +482,7 @@ def getUSBpokaz():
 
     # subtracts zeroing matrix form points pulled from usb
     points = np.subtract(rawPoints, zeroing)
-    for i in range(5):
+    for i in range(6):
         points[2][i] = points[2][i] + (radious * math.sin(math.radians(intake[1, i] * (360 / 4096))))
         print("/////////////")
         print(radious * math.sin(math.radians(intake[1, i] * (360 / 4096))))
@@ -514,7 +585,9 @@ fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), 
 
 menubar.add_command(label="Punkty testowe", command=testPoints)
 
-menubar.add_command(label="Connect", command=lambda: connect(portChoice.get()))
+menubar.add_command(label="Kalibracja obrotu", command=lambda: rotaryCalibration())
+
+# menubar.add_command(label="Connect", command=lambda: connect(portChoice.get()))
 
 setPort = tk.Listbox(menubar)
 ports = p.comports()
@@ -523,7 +596,7 @@ for i in ports:
     setPort.insert(tk.END, i)
 print(setPort)
 #settings.
-menubar.add_cascade(label="Port", menu=setPort)
+# menubar.add_cascade(label="Port", menu=setPort)
 
 #setPort.grid(row=0, column = 7)
 
@@ -532,6 +605,8 @@ menubar.add_cascade(label="Port", menu=setPort)
 if connected == 0:
     portChoice = ttk.Combobox(root, value=p.comports())
     portChoice.grid(row=0, column=5)
+    connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
+    connectButton.grid(row=0, column=6)
 
 getPointsButton = ttk.Button(root, text="pobierz koordynaty", command=getUSBpokaz)
 getPointsButton.grid(row=0, column=2)
