@@ -501,10 +501,10 @@ def getUSBpokaz():
 
     # display the plots
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
-    xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2)
+    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS", pady=20)
     print("yz:")
     yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
-    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2)
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=3, sticky="NS", pady=20, padx=(0,20))
 
     # display datetime of measurement
     now = datetime.now()
@@ -565,9 +565,9 @@ def testPoints():
     print(points)
     # previewPlot()
     xzprojection = plotPoints2d(points[0], points[2], root, 'xzprojection.png', 'X')
-    xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS", pady=20)
+    xzprojection.grid(row=1, column=2, rowspan=3, columnspan=2, sticky="NS", pady=20)
     yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
-    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS", pady=20)
+    yzprojection.grid(row=1, column=4, rowspan=3, columnspan=3, sticky="NS", pady=20, padx=(0, 20))
     # statusBar["text"] = "wygenerowano punkty testowe"
 
     # display datetime of measurement
@@ -615,7 +615,7 @@ if connected == 0:
     connectButton.grid(row=0, column=6)
 
 getPointsButton = ttk.Button(root, text="Wykonaj pomiar", command=getUSBpokaz)
-getPointsButton.grid(row=0, column=2)
+getPointsButton.grid(row=0, column=1, sticky=tk.E, padx=(0, 40), ipadx=5)
 
 # connect to database
 # conn = sqlite3.connect('patients.db')
@@ -644,7 +644,7 @@ getPointsButton.grid(row=0, column=2)
 
 # PERSONAL INFO
 personalInfoFrame = ttk.Frame(root)
-personalInfoFrame.grid(row=1, column=0, padx=20)
+personalInfoFrame.grid(row=1, column=0, padx=20, columnspan=2)
 
 ImieLabel = ttk.Label(personalInfoFrame, text="Imię:")
 ImieLabel.grid(row=0, column=0, sticky="NE")
@@ -679,7 +679,7 @@ ClearPersonalInfoButton.grid(row=6, column=0, columnspan=2)
 
 # Zeroing
 zeroButton = ttk.Button(root, text="Pozycja zerowa", command=zeroPoints)
-zeroButton.grid(row=0, column=1)
+zeroButton.grid(row=0, column=0, sticky=tk.E, padx=(110, 0), ipadx=5)
 
 # statusBar = ttk.Label(root, text="status", border=1, relief=tk.SUNKEN, anchor="se")
 # statusBar.grid(rowspan=8, columnspan=10, sticky="SWE")
