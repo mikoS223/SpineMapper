@@ -262,8 +262,9 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     for i in range(5):
         slope[i] = ((pointsy[i + 1] - pointsy[i]) / (pointsx[i + 1] - pointsx[i]))
         angle[i] = round(math.degrees(math.atan(slope[i])), 2)
-        figxy.text(pointsx[i], pointsy[i], angle[i], horizontalalignment='center', verticalalignment='center',
+        figxy.text(pointsx[i] + 20, pointsy[i] + 20, str(angle[i]) + u'\N{DEGREE SIGN}', horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
+        ax.plot([pointsx[i], pointsx[i]+10], [pointsy[i]+10,  pointsy[i] + 10], color="black")
 
     figxy.savefig(saveAs)
     return canvas.get_tk_widget()
