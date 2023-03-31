@@ -86,7 +86,7 @@ separate = []
 
 # tkinter window init
 root = ThemedTk()
-root.wm_title("Spine Mapper")
+root.wm_title("Pomiar kręgosłupa")
 
 # full screen
 root.state('zoomed')
@@ -130,7 +130,7 @@ def zeroPoints():
     zeroing[0][5] -= 2.8
 
     print(zeroing)
-    statusBar["text"] = "wyzerowano"
+    # statusBar["text"] = "wyzerowano"
 
 
 # delete functionality for a future data base, i'm leaving it here for possible future use
@@ -261,10 +261,13 @@ def plotPoints2d(pointsx, pointsy, window, saveAs, xlabel):
     # display degrees on plots
     for i in range(5):
         slope[i] = ((pointsy[i + 1] - pointsy[i]) / (pointsx[i + 1] - pointsx[i]))
-        angle[i] = round(math.degrees(math.atan(slope[i])), 2)
+        # degrees from horizontal
+        angle[i] = round(90 - (math.degrees(math.atan(slope[i]))), 2)
+        # degrees from vertical
+        # angle[i] = round(math.degrees(math.atan(slope[i])),2)
         figxy.text(pointsx[i] + 20, pointsy[i] + 20, str(angle[i]) + u'\N{DEGREE SIGN}', horizontalalignment='center', verticalalignment='center',
                    transform=ax.transData)
-        ax.plot([pointsx[i], pointsx[i]+10], [pointsy[i]+10,  pointsy[i] + 10], color="black")
+        # ax.plot([pointsx[i], pointsx[i]+10], [pointsy[i]+10,  pointsy[i] + 10], color="black")
 
     figxy.savefig(saveAs)
     return canvas.get_tk_widget()
@@ -378,8 +381,8 @@ def connect(portg):
     ser = serial.Serial(port, 115200, timeout=100)
     ser.flushInput()
     connected = 1
-    if (connected == 1):
-        statusBar["text"] = "Connected to " + portg[0:4]
+   # if (connected == 1):
+        # statusBar["text"] = "Connected to " + portg[0:4]
 
 def clearPersonalInfo():
     ImieField.delete(0, tk.END)
@@ -517,7 +520,7 @@ def portSelect(choice):
 def saveAsPdf(imie, nazwisko, dataUrodzenia, pesel, dataPomiaru, opis):
     # root.configure(cursor="wait")
     # root.update()
-    statusBar["text"] = "Zapisywanie pliku pdf..." # + str(win32print.GetDefaultPrinter()) + "..."
+    # statusBar["text"] = "Zapisywanie pliku pdf..." # + str(win32print.GetDefaultPrinter()) + "..."
 
     pdfDestination = filedialog.asksaveasfilename(title="Select a file", filetypes=(
         [("PDF file", "*.pdf")]))
@@ -565,7 +568,7 @@ def testPoints():
     xzprojection.grid(row=1, column=1, rowspan=3, columnspan=3, sticky="NS", pady=20)
     yzprojection = plotPoints2d(points[1], points[2], root, 'yzprojection.png', 'Y')
     yzprojection.grid(row=1, column=4, rowspan=3, columnspan=2, sticky="NS", pady=20)
-    statusBar["text"] = "wygenerowano punkty testowe"
+    # statusBar["text"] = "wygenerowano punkty testowe"
 
     # display datetime of measurement
     now = datetime.now()
@@ -578,15 +581,17 @@ menubar = tk.Menu(root)
 root.config(menu=menubar)
 
 fileMenu = tk.Menu(menubar, tearoff=0)
-menubar.add_cascade(label="Plik", menu=fileMenu)
-fileMenu.add_command(label="Zapisz jako pdf",
+# menubar.add_cascade(label="Plik", menu=fileMenu)
+menubar.add_command(label="Zapisz jako pdf",
                      command=lambda: saveAsPdf(ImieField.get(), NazwiskoField.get(), DataUrodzeniaSelector.get_date(),
                                                PeselField.get(), DataPomiaruField.get(), NotesField.get("1.0", "end")))
-fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
+# fileMenu.add_command(label="Zapisz", command=lambda: writeToDB(ImieField.get(), NazwiskoField.get(), concatenation()))
+ustawieniaMenu = tk.Menu(menubar, tearoff=0)
+menubar.add_cascade(label="Ustawienia", menu=ustawieniaMenu)
 
-menubar.add_command(label="Punkty testowe", command=testPoints)
+ustawieniaMenu.add_command(label="Punkty testowe", command=testPoints)
 
-menubar.add_command(label="Kalibracja obrotu", command=lambda: rotaryCalibration())
+ustawieniaMenu.add_command(label="Kalibracja obrotu", command=lambda: rotaryCalibration())
 
 # menubar.add_command(label="Connect", command=lambda: connect(portChoice.get()))
 
@@ -606,10 +611,10 @@ print(setPort)
 if connected == 0:
     portChoice = ttk.Combobox(root, value=p.comports())
     portChoice.grid(row=0, column=5)
-    connectButton = ttk.Button(root, text="connect!", command=lambda: connect(portChoice.get()))
+    connectButton = ttk.Button(root, text="Połącz", command=lambda: connect(portChoice.get()))
     connectButton.grid(row=0, column=6)
 
-getPointsButton = ttk.Button(root, text="pobierz koordynaty", command=getUSBpokaz)
+getPointsButton = ttk.Button(root, text="Wykonaj pomiar", command=getUSBpokaz)
 getPointsButton.grid(row=0, column=2)
 
 # connect to database
@@ -639,7 +644,7 @@ getPointsButton.grid(row=0, column=2)
 
 # PERSONAL INFO
 personalInfoFrame = ttk.Frame(root)
-personalInfoFrame.grid(row=1, column=0)
+personalInfoFrame.grid(row=1, column=0, padx=20)
 
 ImieLabel = ttk.Label(personalInfoFrame, text="Imię:")
 ImieLabel.grid(row=0, column=0, sticky="NE")
@@ -650,7 +655,7 @@ NazwiskoLabel.grid(row=1, column=0, sticky="NE")
 NazwiskoField = ttk.Entry(personalInfoFrame, width=40)
 NazwiskoField.grid(row=1, column=1)
 
-DataUrodzeniaLabel = ttk.Label(personalInfoFrame, text="Data Urodzenia:")
+DataUrodzeniaLabel = ttk.Label(personalInfoFrame, text="Data urodzenia:")
 DataUrodzeniaLabel.grid(row=2, column=0, sticky="NE")
 DataUrodzeniaSelector = DateEntry(personalInfoFrame, selectmode='day', year=2000, month=1, day=1)
 DataUrodzeniaSelector.grid(row=2, column=1, sticky="W", padx=20)
@@ -659,7 +664,7 @@ PeselLabel = ttk.Label(personalInfoFrame, text="PESEL:")
 PeselLabel.grid(row=3, column=0)
 PeselField = ttk.Entry(personalInfoFrame, width=40)
 PeselField.grid(row=3, column=1)
-DataPomiaruLabel = ttk.Label(personalInfoFrame, text="Data Pomiaru:")
+DataPomiaruLabel = ttk.Label(personalInfoFrame, text="Data pomiaru:")
 DataPomiaruLabel.grid(row=4, column=0)
 DataPomiaruField = ttk.Entry(personalInfoFrame, width=40)
 DataPomiaruField.grid(row=4, column=1)
@@ -673,11 +678,11 @@ ClearPersonalInfoButton = ttk.Button(personalInfoFrame, text="Wyczyść", comman
 ClearPersonalInfoButton.grid(row=6, column=0, columnspan=2)
 
 # Zeroing
-zeroButton = ttk.Button(root, text="Zeruj", command=zeroPoints)
+zeroButton = ttk.Button(root, text="Pozycja zerowa", command=zeroPoints)
 zeroButton.grid(row=0, column=1)
 
-statusBar = ttk.Label(root, text="status", border=1, relief=tk.SUNKEN, anchor="se")
-statusBar.grid(rowspan=8, columnspan=10, sticky="SWE")
+# statusBar = ttk.Label(root, text="status", border=1, relief=tk.SUNKEN, anchor="se")
+# statusBar.grid(rowspan=8, columnspan=10, sticky="SWE")
 
 root.mainloop()
 
